@@ -256,9 +256,10 @@ class ScenarioTemplate(BaseModel):
 class LLMConfig(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    provider: str
-    api_key: str
+    provider: str  # groq, gemini, claude, openai, openrouter, local
+    api_key: str = ""
     model_name: Optional[str] = None
+    base_url: Optional[str] = None  # For OpenRouter / local LLM (Ollama, LM Studio, etc)
     enabled: bool = False
     rate_limit: int = 100
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
