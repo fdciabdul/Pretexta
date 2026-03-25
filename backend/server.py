@@ -1,34 +1,34 @@
-import os
 import logging
+import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, APIRouter
+from fastapi import APIRouter, FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from services.database import db
-from services.auth import hash_password
-from models.schemas import User
 from middleware.rate_limit import RateLimitMiddleware
+from models.schemas import User
 from routes import (
-    auth_router,
-    challenges_router,
-    quizzes_router,
-    simulations_router,
-    llm_router,
-    settings_router,
-    imports_router,
-    reports_router,
-    leaderboard_router,
-    analytics_router,
-    organizations_router,
-    campaigns_router,
-    notifications_router,
-    webhooks_router,
-    scenario_builder_router,
-    debrief_router,
-    certificates_router,
     adaptive_router,
+    analytics_router,
+    auth_router,
+    campaigns_router,
+    certificates_router,
+    challenges_router,
+    debrief_router,
+    imports_router,
+    leaderboard_router,
+    llm_router,
+    notifications_router,
+    organizations_router,
+    quizzes_router,
+    reports_router,
+    scenario_builder_router,
+    settings_router,
+    simulations_router,
+    webhooks_router,
 )
+from services.auth import hash_password
+from services.database import db
 
 # Configure logging
 logging.basicConfig(
@@ -71,6 +71,7 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     from services.database import client
+
     client.close()
 
 

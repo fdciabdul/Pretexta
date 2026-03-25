@@ -1,7 +1,7 @@
-from typing import Any, Dict
+from typing import Any
 
 
-def calculate_susceptibility_score(simulation: Dict[str, Any]) -> Dict[str, Any]:
+def calculate_susceptibility_score(simulation: dict[str, Any]) -> dict[str, Any]:
     """Calculate susceptibility score 0-100. Lower = more susceptible."""
     events = simulation.get("events", [])
 

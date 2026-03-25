@@ -1,7 +1,8 @@
 import logging
+from typing import Any
+
 import httpx
-from typing import Any, Dict, List
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from models.schemas import User, WebhookConfig
 from services.auth import get_current_user
@@ -31,7 +32,7 @@ async def get_webhooks(current_user: User = Depends(get_current_user)):
 
 
 @router.post("")
-async def create_webhook(data: Dict[str, Any], current_user: User = Depends(get_current_user)):
+async def create_webhook(data: dict[str, Any], current_user: User = Depends(get_current_user)):
     """Create a webhook configuration."""
     if current_user.role not in ("admin", "instructor"):
         raise HTTPException(status_code=403, detail="Insufficient permissions")
@@ -61,7 +62,7 @@ async def delete_webhook(webhook_id: str, current_user: User = Depends(get_curre
     return {"message": "Webhook deleted"}
 
 
-async def fire_webhooks(event: str, payload: Dict[str, Any], organization_id: str = None):
+async def fire_webhooks(event: str, payload: dict[str, Any], organization_id: str = None):
     """Fire all matching webhooks for an event."""
     query = {"enabled": True, "events": event}
     if organization_id:
@@ -76,7 +77,11 @@ async def fire_webhooks(event: str, payload: Dict[str, Any], organization_id: st
                 if wh.get("secret"):
                     headers["X-Webhook-Secret"] = wh["secret"]
 
-                await client.post(wh["url"], json={"event": event, "data": payload}, headers=headers)
+                await client.post(
+                    wh["url"],
+                    json={"event": event, "data": payload},
+                    headers=headers,
+                )
                 logger.info(f"Webhook fired: {wh['name']} -> {event}")
         except Exception as e:
             logger.error(f"Webhook failed: {wh['name']} -> {e}")

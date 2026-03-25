@@ -1,7 +1,6 @@
-import json
-from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, Depends
-from fastapi.responses import JSONResponse
+from datetime import UTC, datetime
+
+from fastapi import APIRouter, Depends, HTTPException
 
 from models.schemas import User
 from services.auth import get_current_user
@@ -11,21 +10,15 @@ router = APIRouter(prefix="/certificates", tags=["certificates"])
 
 
 @router.get("/{simulation_id}")
-async def get_certificate_data(
-    simulation_id: str, current_user: User = Depends(get_current_user)
-):
+async def get_certificate_data(simulation_id: str, current_user: User = Depends(get_current_user)):
     """Generate certificate data for a completed simulation."""
-    sim = await db.simulations.find_one(
-        {"id": simulation_id, "status": "completed"}, {"_id": 0}
-    )
+    sim = await db.simulations.find_one({"id": simulation_id, "status": "completed"}, {"_id": 0})
     if not sim:
         raise HTTPException(status_code=404, detail="Completed simulation not found")
 
     score = sim.get("score", 0) or 0
     if score < 70:
-        raise HTTPException(
-            status_code=400, detail="Certificate requires a minimum score of 70%"
-        )
+        raise HTTPException(status_code=400, detail="Certificate requires a minimum score of 70%")
 
     # Determine certification level
     if score >= 95:
@@ -52,9 +45,13 @@ async def get_certificate_data(
         "certification": {
             "level": cert_level,
             "title": "Social Engineering Awareness",
-            "description": f"Has demonstrated {cert_level.lower()}-level proficiency in identifying and defending against social engineering attacks.",
+            "description": (
+                f"Has demonstrated {cert_level.lower()}-level "
+                f"proficiency in identifying and defending "
+                f"against social engineering attacks."
+            ),
         },
-        "issued_at": datetime.now(timezone.utc).isoformat(),
+        "issued_at": datetime.now(UTC).isoformat(),
         "issuer": "Pretexta - Social Engineering Simulation Lab",
         "verification_url": f"/verify/{simulation_id[:8].upper()}",
     }
@@ -86,13 +83,15 @@ async def get_user_certificates(current_user: User = Depends(get_current_user)):
         else:
             continue
 
-        certificates.append({
-            "certificate_id": f"CERT-{sim['id'][:8].upper()}",
-            "simulation_id": sim["id"],
-            "title": sim.get("title", "Social Engineering Awareness"),
-            "score": score,
-            "level": level,
-            "completed_at": sim.get("completed_at", sim.get("started_at")),
-        })
+        certificates.append(
+            {
+                "certificate_id": f"CERT-{sim['id'][:8].upper()}",
+                "simulation_id": sim["id"],
+                "title": sim.get("title", "Social Engineering Awareness"),
+                "score": score,
+                "level": level,
+                "completed_at": sim.get("completed_at", sim.get("started_at")),
+            }
+        )
 
     return certificates

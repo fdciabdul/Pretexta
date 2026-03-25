@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
 from models.schemas import User
 from services.auth import get_current_user
-from services.scoring import calculate_susceptibility_score
 from services.database import db
+from services.scoring import calculate_susceptibility_score
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 

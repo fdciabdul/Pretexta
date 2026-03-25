@@ -1,8 +1,9 @@
-from typing import Any, Dict, List
-from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, Depends
+from datetime import UTC, datetime
+from typing import Any
 
-from models.schemas import User, Simulation
+from fastapi import APIRouter, Depends, HTTPException
+
+from models.schemas import Simulation, User
 from services.auth import get_current_user
 from services.database import db
 
@@ -19,7 +20,7 @@ async def create_simulation(simulation: Simulation, current_user: User = Depends
     return {"id": simulation.id, "status": "created"}
 
 
-@router.get("", response_model=List[Simulation])
+@router.get("", response_model=list[Simulation])
 async def get_simulations(current_user: User = Depends(get_current_user)):
     sims = await db.simulations.find({}, {"_id": 0}).sort("started_at", -1).to_list(100)
     return sims
@@ -35,10 +36,10 @@ async def get_simulation(simulation_id: str, current_user: User = Depends(get_cu
 
 @router.put("/{simulation_id}")
 async def update_simulation(
-    simulation_id: str, updates: Dict[str, Any], current_user: User = Depends(get_current_user)
+    simulation_id: str, updates: dict[str, Any], current_user: User = Depends(get_current_user)
 ):
     if updates.get("completed_at"):
-        updates["completed_at"] = datetime.now(timezone.utc).isoformat()
+        updates["completed_at"] = datetime.now(UTC).isoformat()
 
     result = await db.simulations.update_one({"id": simulation_id}, {"$set": updates})
 

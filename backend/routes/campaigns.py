@@ -1,8 +1,9 @@
-from typing import Any, Dict, List
-from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, Depends
+from datetime import UTC, datetime
+from typing import Any
 
-from models.schemas import User, Campaign, CampaignProgress
+from fastapi import APIRouter, Depends, HTTPException
+
+from models.schemas import Campaign, CampaignProgress, User
 from services.auth import get_current_user
 from services.database import db
 from services.gamification import award_xp
@@ -13,9 +14,7 @@ router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 @router.get("")
 async def get_campaigns(current_user: User = Depends(get_current_user)):
     """List all published campaigns."""
-    campaigns = await db.campaigns.find(
-        {"is_published": True}, {"_id": 0}
-    ).to_list(100)
+    campaigns = await db.campaigns.find({"is_published": True}, {"_id": 0}).to_list(100)
     return campaigns
 
 
@@ -34,7 +33,7 @@ async def get_campaign(campaign_id: str, current_user: User = Depends(get_curren
 
 
 @router.post("")
-async def create_campaign(data: Dict[str, Any], current_user: User = Depends(get_current_user)):
+async def create_campaign(data: dict[str, Any], current_user: User = Depends(get_current_user)):
     """Create a new campaign (admin/instructor only)."""
     if current_user.role not in ("admin", "instructor"):
         raise HTTPException(status_code=403, detail="Insufficient permissions")
@@ -84,7 +83,7 @@ async def start_campaign(campaign_id: str, current_user: User = Depends(get_curr
 async def complete_stage(
     campaign_id: str,
     stage_index: int,
-    result: Dict[str, Any],
+    result: dict[str, Any],
     current_user: User = Depends(get_current_user),
 ):
     """Complete a campaign stage."""
@@ -103,7 +102,7 @@ async def complete_stage(
     stage_result = {
         "stage_index": stage_index,
         "score": result.get("score", 0),
-        "completed_at": datetime.now(timezone.utc).isoformat(),
+        "completed_at": datetime.now(UTC).isoformat(),
         "events": result.get("events", []),
     }
 
@@ -122,7 +121,7 @@ async def complete_stage(
 
     if is_complete:
         updates["status"] = "completed"
-        updates["completed_at"] = datetime.now(timezone.utc).isoformat()
+        updates["completed_at"] = datetime.now(UTC).isoformat()
         # Calculate overall score
         all_scores = [r.get("score", 0) for r in stage_results]
         updates["overall_score"] = round(sum(all_scores) / len(all_scores), 1) if all_scores else 0

@@ -18,9 +18,9 @@ async def get_notifications(
     if unread_only:
         query["read"] = False
 
-    notifications = await db.notifications.find(
-        query, {"_id": 0}
-    ).sort("created_at", -1).to_list(limit)
+    notifications = (
+        await db.notifications.find(query, {"_id": 0}).sort("created_at", -1).to_list(limit)
+    )
 
     unread_count = await db.notifications.count_documents(
         {"user_id": current_user.id, "read": False}

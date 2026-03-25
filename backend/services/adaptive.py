@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from services.database import db
 
@@ -11,10 +10,14 @@ DIFFICULTY_ORDER = ["easy", "medium", "hard"]
 
 async def get_recommended_difficulty(user_id: str) -> str:
     """Calculate recommended difficulty based on user performance."""
-    sims = await db.simulations.find(
-        {"user_id": user_id, "status": "completed"},
-        {"_id": 0, "score": 1, "difficulty": 1, "started_at": 1},
-    ).sort("started_at", -1).to_list(10)
+    sims = (
+        await db.simulations.find(
+            {"user_id": user_id, "status": "completed"},
+            {"_id": 0, "score": 1, "difficulty": 1, "started_at": 1},
+        )
+        .sort("started_at", -1)
+        .to_list(10)
+    )
 
     if not sims or len(sims) < 3:
         return "easy"
@@ -25,7 +28,9 @@ async def get_recommended_difficulty(user_id: str) -> str:
     avg_score = sum(recent_scores) / len(recent_scores)
 
     current_difficulty = recent[0].get("difficulty", "medium")
-    current_idx = DIFFICULTY_ORDER.index(current_difficulty) if current_difficulty in DIFFICULTY_ORDER else 1
+    current_idx = (
+        DIFFICULTY_ORDER.index(current_difficulty) if current_difficulty in DIFFICULTY_ORDER else 1
+    )
 
     # Escalate if consistently scoring high
     if avg_score >= 85 and current_idx < len(DIFFICULTY_ORDER) - 1:
@@ -55,16 +60,35 @@ async def get_recommended_categories(user_id: str) -> list:
             category_counts[cat] = category_counts.get(cat, 0) + 1
 
     # Find weak areas (lowest avg scores) and unexplored areas
-    all_categories = ["reciprocity", "scarcity", "authority", "commitment", "liking", "social_proof"]
+    all_categories = [
+        "reciprocity",
+        "scarcity",
+        "authority",
+        "commitment",
+        "liking",
+        "social_proof",
+    ]
     recommendations = []
 
     for cat in all_categories:
         if cat not in category_scores:
-            recommendations.append({"category": cat, "reason": "not_attempted", "avg_score": 0})
+            recommendations.append(
+                {
+                    "category": cat,
+                    "reason": "not_attempted",
+                    "avg_score": 0,
+                }
+            )
         else:
             avg = sum(category_scores[cat]) / len(category_scores[cat])
             if avg < 70:
-                recommendations.append({"category": cat, "reason": "needs_improvement", "avg_score": round(avg, 1)})
+                recommendations.append(
+                    {
+                        "category": cat,
+                        "reason": "needs_improvement",
+                        "avg_score": round(avg, 1),
+                    }
+                )
 
     # Sort: not_attempted first, then lowest scores
     recommendations.sort(key=lambda x: (x["reason"] != "not_attempted", x["avg_score"]))
@@ -82,21 +106,32 @@ async def get_adaptive_persona_params(user_id: str) -> dict:
             "persistence": 2,
             "technique_complexity": "basic",
             "hints_enabled": True,
-            "instruction": "Be somewhat obvious in your manipulation. Use simple techniques. Give the user clear red flags to catch.",
+            "instruction": (
+                "Be somewhat obvious in your manipulation. "
+                "Use simple techniques. "
+                "Give the user clear red flags to catch."
+            ),
         },
         "medium": {
             "aggressiveness": 0.6,
             "persistence": 4,
             "technique_complexity": "intermediate",
             "hints_enabled": False,
-            "instruction": "Use moderately sophisticated manipulation. Mix techniques. Don't be too obvious.",
+            "instruction": (
+                "Use moderately sophisticated manipulation. Mix techniques. Don't be too obvious."
+            ),
         },
         "hard": {
             "aggressiveness": 0.9,
             "persistence": 6,
             "technique_complexity": "advanced",
             "hints_enabled": False,
-            "instruction": "Use highly sophisticated, multi-layered manipulation. Combine Cialdini principles. Be very convincing and persistent. Adapt your approach when resisted.",
+            "instruction": (
+                "Use highly sophisticated, multi-layered "
+                "manipulation. Combine Cialdini principles. "
+                "Be very convincing and persistent. "
+                "Adapt your approach when resisted."
+            ),
         },
     }
 

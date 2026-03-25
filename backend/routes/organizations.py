@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Depends
-from typing import Dict, Any
+from typing import Any
 
-from models.schemas import User, Organization
+from fastapi import APIRouter, Depends, HTTPException
+
+from models.schemas import Organization, User
 from services.auth import get_current_user
 from services.database import db
 
@@ -9,7 +10,7 @@ router = APIRouter(prefix="/organizations", tags=["organizations"])
 
 
 @router.post("")
-async def create_organization(data: Dict[str, Any], current_user: User = Depends(get_current_user)):
+async def create_organization(data: dict[str, Any], current_user: User = Depends(get_current_user)):
     """Create a new organization."""
     org = Organization(
         name=data["name"],
@@ -30,9 +31,8 @@ async def create_organization(data: Dict[str, Any], current_user: User = Depends
     # Award team player badge
     if "team_player" not in current_user.badges:
         from services.gamification import award_xp
-        await db.users.update_one(
-            {"id": current_user.id}, {"$addToSet": {"badges": "team_player"}}
-        )
+
+        await db.users.update_one({"id": current_user.id}, {"$addToSet": {"badges": "team_player"}})
         await award_xp(current_user.id, 50)
 
     return {"id": org.id, "invite_code": org.invite_code, "message": "Organization created"}
@@ -44,9 +44,7 @@ async def get_my_organization(current_user: User = Depends(get_current_user)):
     if not current_user.organization_id:
         return None
 
-    org = await db.organizations.find_one(
-        {"id": current_user.organization_id}, {"_id": 0}
-    )
+    org = await db.organizations.find_one({"id": current_user.organization_id}, {"_id": 0})
     if not org:
         return None
 
@@ -72,9 +70,7 @@ async def get_my_organization(current_user: User = Depends(get_current_user)):
 
 
 @router.post("/join")
-async def join_organization(
-    data: Dict[str, Any], current_user: User = Depends(get_current_user)
-):
+async def join_organization(data: dict[str, Any], current_user: User = Depends(get_current_user)):
     """Join an organization via invite code."""
     invite_code = data.get("invite_code", "")
     org = await db.organizations.find_one({"invite_code": invite_code}, {"_id": 0})
@@ -96,9 +92,8 @@ async def join_organization(
     # Award badge
     if "team_player" not in current_user.badges:
         from services.gamification import award_xp
-        await db.users.update_one(
-            {"id": current_user.id}, {"$addToSet": {"badges": "team_player"}}
-        )
+
+        await db.users.update_one({"id": current_user.id}, {"$addToSet": {"badges": "team_player"}})
         await award_xp(current_user.id, 50)
 
     return {"message": f"Joined {org['name']}", "organization_id": org["id"]}
@@ -110,9 +105,7 @@ async def leave_organization(current_user: User = Depends(get_current_user)):
     if not current_user.organization_id:
         raise HTTPException(status_code=400, detail="Not in an organization")
 
-    org = await db.organizations.find_one(
-        {"id": current_user.organization_id}, {"_id": 0}
-    )
+    org = await db.organizations.find_one({"id": current_user.organization_id}, {"_id": 0})
     if org and org.get("owner_id") == current_user.id:
         raise HTTPException(status_code=400, detail="Owner cannot leave. Transfer ownership first.")
 

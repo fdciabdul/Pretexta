@@ -1,6 +1,7 @@
 import logging
-from typing import Any, Dict
-from fastapi import APIRouter, HTTPException, Depends
+from typing import Any
+
+from fastapi import APIRouter, Depends, HTTPException
 
 from models.schemas import User
 from services.auth import get_current_user
@@ -12,12 +13,18 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/debrief", tags=["debrief"])
 
 CIALDINI_DESCRIPTIONS = {
-    "reciprocity": "The attacker gave you something (a favor, information) to create a sense of obligation.",
-    "scarcity": "Urgency or limited availability was used to pressure you into acting without thinking.",
-    "authority": "The attacker impersonated someone in a position of power to override your judgment.",
-    "commitment": "Small initial compliance was used to build toward larger, riskier requests.",
-    "liking": "The attacker built rapport or familiarity to lower your defenses.",
-    "social_proof": "References to what 'others are doing' were used to normalize the request.",
+    "reciprocity": (
+        "The attacker gave you something (a favor, information) to create a sense of obligation."
+    ),
+    "scarcity": (
+        "Urgency or limited availability was used to pressure you into acting without thinking."
+    ),
+    "authority": (
+        "The attacker impersonated someone in a position of power to override your judgment."
+    ),
+    "commitment": ("Small initial compliance was used to build toward larger, riskier requests."),
+    "liking": ("The attacker built rapport or familiarity to lower your defenses."),
+    "social_proof": ("References to what 'others are doing' were used to normalize the request."),
 }
 
 
@@ -44,58 +51,79 @@ async def get_debrief(simulation_id: str, current_user: User = Depends(get_curre
     return debrief
 
 
-async def _generate_debrief(sim: Dict[str, Any]) -> Dict[str, Any]:
+async def _generate_debrief(sim: dict[str, Any]) -> dict[str, Any]:
     """Generate a detailed debrief analysis."""
     events = sim.get("events", [])
     score = sim.get("score", 0) or 0
-    sim_type = sim.get("simulation_type", sim.get("type", "unknown"))
     categories = sim.get("challenge_data", {}).get("cialdini_categories", [])
 
     # Key moments analysis
     key_moments = []
     for i, event in enumerate(events):
         if event.get("action") in ("complied", "clicked", "shared_info", "refused", "reported"):
-            key_moments.append({
-                "index": i,
-                "action": event.get("action"),
-                "was_correct": event.get("action") in ("refused", "reported"),
-                "description": event.get("description", ""),
-                "tip": _get_tip_for_action(event.get("action", "")),
-            })
+            key_moments.append(
+                {
+                    "index": i,
+                    "action": event.get("action"),
+                    "was_correct": event.get("action") in ("refused", "reported"),
+                    "description": event.get("description", ""),
+                    "tip": _get_tip_for_action(event.get("action", "")),
+                }
+            )
 
     # Cialdini analysis
     cialdini_analysis = []
     for cat in categories:
-        cialdini_analysis.append({
-            "principle": cat,
-            "description": CIALDINI_DESCRIPTIONS.get(cat, ""),
-            "was_used": True,
-        })
+        cialdini_analysis.append(
+            {
+                "principle": cat,
+                "description": CIALDINI_DESCRIPTIONS.get(cat, ""),
+                "was_used": True,
+            }
+        )
 
     # Performance rating
     if score >= 90:
         rating = "excellent"
-        summary = "You demonstrated strong awareness and successfully identified the attack vectors."
+        summary = (
+            "You demonstrated strong awareness and successfully identified the attack vectors."
+        )
     elif score >= 70:
         rating = "good"
         summary = "Good performance. You caught most red flags but had some vulnerable moments."
     elif score >= 50:
         rating = "fair"
-        summary = "Mixed results. You fell for some manipulation techniques. Review the key moments below."
+        summary = (
+            "Mixed results. You fell for some manipulation "
+            "techniques. Review the key moments below."
+        )
     else:
         rating = "needs_improvement"
-        summary = "The attacker was able to exploit psychological vulnerabilities. Focus on the tips below."
+        summary = (
+            "The attacker was able to exploit psychological "
+            "vulnerabilities. Focus on the tips below."
+        )
 
     # Recommendations
     recommendations = []
     if score < 70:
-        recommendations.append("Always verify identity through a separate, trusted channel before complying with requests.")
+        recommendations.append(
+            "Always verify identity through a separate, "
+            "trusted channel before complying with requests."
+        )
     if "authority" in categories:
-        recommendations.append("Question authority-based requests. Legitimate leaders rarely bypass established procedures.")
+        recommendations.append(
+            "Question authority-based requests. Legitimate "
+            "leaders rarely bypass established procedures."
+        )
     if "scarcity" in categories:
-        recommendations.append("Be suspicious of artificial urgency. Take time to verify before acting.")
+        recommendations.append(
+            "Be suspicious of artificial urgency. Take time to verify before acting."
+        )
     if "reciprocity" in categories:
-        recommendations.append("Unsolicited favors may be manipulation. Don't feel obligated to reciprocate.")
+        recommendations.append(
+            "Unsolicited favors may be manipulation. Don't feel obligated to reciprocate."
+        )
     if score >= 80:
         recommendations.append("Great defense! Try harder difficulty scenarios to keep improving.")
 
@@ -116,11 +144,19 @@ async def _generate_debrief(sim: Dict[str, Any]) -> Dict[str, Any]:
 
 def _get_tip_for_action(action: str) -> str:
     tips = {
-        "complied": "You complied with a suspicious request. Always verify through official channels.",
-        "clicked": "You clicked a potentially malicious link. Hover over links to check URLs first.",
-        "shared_info": "You shared sensitive information. Never share credentials or personal data over unverified channels.",
-        "refused": "Good call! Refusing suspicious requests is the right approach.",
-        "reported": "Excellent! Reporting suspicious activity helps protect the entire organization.",
+        "complied": (
+            "You complied with a suspicious request. Always verify through official channels."
+        ),
+        "clicked": (
+            "You clicked a potentially malicious link. Hover over links to check URLs first."
+        ),
+        "shared_info": (
+            "You shared sensitive information. Never share credentials over unverified channels."
+        ),
+        "refused": ("Good call! Refusing suspicious requests is the right approach."),
+        "reported": (
+            "Excellent! Reporting suspicious activity helps protect the entire organization."
+        ),
     }
     return tips.get(action, "")
 
@@ -138,10 +174,10 @@ async def get_ai_debrief(simulation_id: str, current_user: User = Depends(get_cu
 
     prompt = f"""Analyze this social engineering simulation result and provide educational feedback.
 
-Simulation: {sim.get('title', 'Unknown')}
-Score: {sim.get('score', 0)}
-Type: {sim.get('simulation_type', 'unknown')}
-Events: {sim.get('events', [])}
+Simulation: {sim.get("title", "Unknown")}
+Score: {sim.get("score", 0)}
+Type: {sim.get("simulation_type", "unknown")}
+Events: {sim.get("events", [])}
 
 Provide:
 1. What manipulation techniques were used
@@ -149,7 +185,8 @@ Provide:
 3. Specific, actionable tips for improvement
 4. A psychological explanation of why these techniques work
 
-Keep the response educational and constructive. Format as JSON with keys: techniques, vulnerabilities, tips, psychology."""
+Keep it educational. Format as JSON with keys:
+techniques, vulnerabilities, tips, psychology."""
 
     try:
         response = await get_llm_generate_model(config, prompt, {})

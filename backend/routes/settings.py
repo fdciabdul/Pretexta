@@ -1,7 +1,8 @@
-from typing import Any, Dict
+from typing import Any
+
 from fastapi import APIRouter, Depends
 
-from models.schemas import User, Settings
+from models.schemas import Settings, User
 from services.auth import get_current_user
 from services.database import db
 
@@ -18,7 +19,7 @@ async def get_settings(current_user: User = Depends(get_current_user)):
 
 
 @router.put("")
-async def update_settings(updates: Dict[str, Any], current_user: User = Depends(get_current_user)):
+async def update_settings(updates: dict[str, Any], current_user: User = Depends(get_current_user)):
     await db.settings.update_one(
         {"id": "settings"},
         {"$set": updates},

@@ -1,5 +1,6 @@
 import time
 from collections import defaultdict
+
 from fastapi import HTTPException, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -26,7 +27,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             if len(self.attempts[client_ip]) >= self.max_attempts:
                 raise HTTPException(
                     status_code=429,
-                    detail=f"Too many login attempts. Try again in {self.window_seconds // 60} minutes.",
+                    detail=f"Too many login attempts. Try again in "
+                    f"{self.window_seconds // 60} minutes.",
                 )
 
             self.attempts[client_ip].append(now)

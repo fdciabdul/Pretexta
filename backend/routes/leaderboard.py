@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Depends, Query
-from typing import Optional
 
 from models.schemas import User
 from services.auth import get_current_user
@@ -20,10 +19,14 @@ async def get_leaderboard(
     if scope == "organization" and current_user.organization_id:
         query["organization_id"] = current_user.organization_id
 
-    users = await db.users.find(
-        query,
-        {"_id": 0, "password_hash": 0},
-    ).sort("xp", -1).to_list(limit)
+    users = (
+        await db.users.find(
+            query,
+            {"_id": 0, "password_hash": 0},
+        )
+        .sort("xp", -1)
+        .to_list(limit)
+    )
 
     leaderboard = []
     for rank, user in enumerate(users, 1):
@@ -32,18 +35,20 @@ async def get_leaderboard(
             {"user_id": user["id"], "status": "completed"}
         )
 
-        leaderboard.append({
-            "rank": rank,
-            "user_id": user["id"],
-            "username": user.get("username", ""),
-            "display_name": user.get("display_name", user.get("username", "")),
-            "xp": user.get("xp", 0),
-            "level": user.get("level", 1),
-            "badges_count": len(user.get("badges", [])),
-            "streak_days": user.get("streak_days", 0),
-            "simulations_completed": sim_count,
-            "is_current_user": user["id"] == current_user.id,
-        })
+        leaderboard.append(
+            {
+                "rank": rank,
+                "user_id": user["id"],
+                "username": user.get("username", ""),
+                "display_name": user.get("display_name", user.get("username", "")),
+                "xp": user.get("xp", 0),
+                "level": user.get("level", 1),
+                "badges_count": len(user.get("badges", [])),
+                "streak_days": user.get("streak_days", 0),
+                "simulations_completed": sim_count,
+                "is_current_user": user["id"] == current_user.id,
+            }
+        )
 
     return leaderboard
 
@@ -75,8 +80,10 @@ async def get_all_badges(current_user: User = Depends(get_current_user)):
     """Get all available badges with earned status."""
     result = []
     for badge in BADGE_DEFINITIONS:
-        result.append({
-            **badge,
-            "earned": badge["id"] in current_user.badges,
-        })
+        result.append(
+            {
+                **badge,
+                "earned": badge["id"] in current_user.badges,
+            }
+        )
     return result

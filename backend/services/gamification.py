@@ -1,6 +1,5 @@
 import logging
-from datetime import datetime, timezone, timedelta
-from typing import Optional
+from datetime import UTC, datetime
 
 from services.database import db
 
@@ -11,18 +10,102 @@ LEVEL_THRESHOLDS = [0, 100, 300, 600, 1000, 1500, 2200, 3000, 4000, 5500, 7500, 
 
 # Badge definitions
 BADGE_DEFINITIONS = [
-    {"id": "first_blood", "name": "First Blood", "description": "Complete your first simulation", "icon": "Sword", "condition": "complete_1_simulation", "xp_reward": 50},
-    {"id": "phishing_detector", "name": "Phishing Detector", "description": "Score 80%+ on 3 phishing scenarios", "icon": "Shield", "condition": "phishing_score_80_x3", "xp_reward": 100},
-    {"id": "social_proof_immune", "name": "Social Proof Immune", "description": "Resist all social proof attacks", "icon": "Users", "condition": "resist_social_proof_x3", "xp_reward": 100},
-    {"id": "authority_challenger", "name": "Authority Challenger", "description": "Score 90%+ on authority-based attacks", "icon": "Crown", "condition": "authority_score_90", "xp_reward": 150},
-    {"id": "streak_3", "name": "On Fire", "description": "Maintain a 3-day streak", "icon": "Flame", "condition": "streak_3", "xp_reward": 75},
-    {"id": "streak_7", "name": "Unstoppable", "description": "Maintain a 7-day streak", "icon": "Zap", "condition": "streak_7", "xp_reward": 150},
-    {"id": "streak_30", "name": "Iron Will", "description": "Maintain a 30-day streak", "icon": "Trophy", "condition": "streak_30", "xp_reward": 500},
-    {"id": "quiz_master", "name": "Quiz Master", "description": "Score 100% on 5 quizzes", "icon": "BookCheck", "condition": "quiz_perfect_x5", "xp_reward": 200},
-    {"id": "all_categories", "name": "Cialdini Scholar", "description": "Complete scenarios in all 6 Cialdini categories", "icon": "Brain", "condition": "all_cialdini_categories", "xp_reward": 300},
-    {"id": "campaign_hero", "name": "Campaign Hero", "description": "Complete a full campaign with 80%+ avg score", "icon": "Flag", "condition": "campaign_complete_80", "xp_reward": 250},
-    {"id": "team_player", "name": "Team Player", "description": "Join an organization", "icon": "Users2", "condition": "join_organization", "xp_reward": 50},
-    {"id": "scenario_creator", "name": "Scenario Creator", "description": "Publish a custom scenario", "icon": "Pencil", "condition": "publish_scenario", "xp_reward": 200},
+    {
+        "id": "first_blood",
+        "name": "First Blood",
+        "description": "Complete your first simulation",
+        "icon": "Sword",
+        "condition": "complete_1_simulation",
+        "xp_reward": 50,
+    },
+    {
+        "id": "phishing_detector",
+        "name": "Phishing Detector",
+        "description": "Score 80%+ on 3 phishing scenarios",
+        "icon": "Shield",
+        "condition": "phishing_score_80_x3",
+        "xp_reward": 100,
+    },
+    {
+        "id": "social_proof_immune",
+        "name": "Social Proof Immune",
+        "description": "Resist all social proof attacks",
+        "icon": "Users",
+        "condition": "resist_social_proof_x3",
+        "xp_reward": 100,
+    },
+    {
+        "id": "authority_challenger",
+        "name": "Authority Challenger",
+        "description": "Score 90%+ on authority-based attacks",
+        "icon": "Crown",
+        "condition": "authority_score_90",
+        "xp_reward": 150,
+    },
+    {
+        "id": "streak_3",
+        "name": "On Fire",
+        "description": "Maintain a 3-day streak",
+        "icon": "Flame",
+        "condition": "streak_3",
+        "xp_reward": 75,
+    },
+    {
+        "id": "streak_7",
+        "name": "Unstoppable",
+        "description": "Maintain a 7-day streak",
+        "icon": "Zap",
+        "condition": "streak_7",
+        "xp_reward": 150,
+    },
+    {
+        "id": "streak_30",
+        "name": "Iron Will",
+        "description": "Maintain a 30-day streak",
+        "icon": "Trophy",
+        "condition": "streak_30",
+        "xp_reward": 500,
+    },
+    {
+        "id": "quiz_master",
+        "name": "Quiz Master",
+        "description": "Score 100% on 5 quizzes",
+        "icon": "BookCheck",
+        "condition": "quiz_perfect_x5",
+        "xp_reward": 200,
+    },
+    {
+        "id": "all_categories",
+        "name": "Cialdini Scholar",
+        "description": "Complete scenarios in all 6 categories",
+        "icon": "Brain",
+        "condition": "all_cialdini_categories",
+        "xp_reward": 300,
+    },
+    {
+        "id": "campaign_hero",
+        "name": "Campaign Hero",
+        "description": "Complete a campaign with 80%+ avg score",
+        "icon": "Flag",
+        "condition": "campaign_complete_80",
+        "xp_reward": 250,
+    },
+    {
+        "id": "team_player",
+        "name": "Team Player",
+        "description": "Join an organization",
+        "icon": "Users2",
+        "condition": "join_organization",
+        "xp_reward": 50,
+    },
+    {
+        "id": "scenario_creator",
+        "name": "Scenario Creator",
+        "description": "Publish a custom scenario",
+        "icon": "Pencil",
+        "condition": "publish_scenario",
+        "xp_reward": 200,
+    },
 ]
 
 
@@ -59,7 +142,7 @@ async def award_xp(user_id: str, xp_amount: int, check_streak: bool = False) -> 
     if not user:
         return {}
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     updates = {}
     new_badges = []
 
@@ -114,27 +197,31 @@ async def award_xp(user_id: str, xp_amount: int, check_streak: bool = False) -> 
     for badge_id in new_badges:
         badge_def = next((b for b in BADGE_DEFINITIONS if b["id"] == badge_id), None)
         if badge_def:
-            await db.notifications.insert_one({
-                "id": str(__import__("uuid").uuid4()),
-                "user_id": user_id,
-                "title": f"Badge Earned: {badge_def['name']}",
-                "message": badge_def["description"],
-                "type": "achievement",
-                "read": False,
-                "created_at": now.isoformat(),
-            })
+            await db.notifications.insert_one(
+                {
+                    "id": str(__import__("uuid").uuid4()),
+                    "user_id": user_id,
+                    "title": f"Badge Earned: {badge_def['name']}",
+                    "message": badge_def["description"],
+                    "type": "achievement",
+                    "read": False,
+                    "created_at": now.isoformat(),
+                }
+            )
 
     leveled_up = new_level > user.get("level", 1)
     if leveled_up:
-        await db.notifications.insert_one({
-            "id": str(__import__("uuid").uuid4()),
-            "user_id": user_id,
-            "title": f"Level Up! You're now Level {new_level}",
-            "message": f"Keep training to reach Level {new_level + 1}!",
-            "type": "achievement",
-            "read": False,
-            "created_at": now.isoformat(),
-        })
+        await db.notifications.insert_one(
+            {
+                "id": str(__import__("uuid").uuid4()),
+                "user_id": user_id,
+                "title": f"Level Up! You're now Level {new_level}",
+                "message": f"Keep training to reach Level {new_level + 1}!",
+                "type": "achievement",
+                "read": False,
+                "created_at": now.isoformat(),
+            }
+        )
 
     return {
         "xp_earned": xp_amount,

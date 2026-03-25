@@ -1,5 +1,4 @@
-from datetime import datetime, timezone, timedelta
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 
 from models.schemas import User
 from services.auth import get_current_user
@@ -64,12 +63,14 @@ async def get_personal_analytics(current_user: User = Depends(get_current_user))
     # Score over time
     score_over_time = []
     for sim in sorted(sims, key=lambda s: s.get("started_at", "")):
-        score_over_time.append({
-            "date": sim.get("completed_at", sim.get("started_at", "")),
-            "score": sim.get("score", 0) or 0,
-            "type": sim.get("simulation_type", "unknown"),
-            "title": sim.get("title", "Untitled"),
-        })
+        score_over_time.append(
+            {
+                "date": sim.get("completed_at", sim.get("started_at", "")),
+                "score": sim.get("score", 0) or 0,
+                "type": sim.get("simulation_type", "unknown"),
+                "title": sim.get("title", "Untitled"),
+            }
+        )
 
     # Type distribution
     type_dist = {}
@@ -103,9 +104,7 @@ async def get_team_analytics(current_user: User = Depends(get_current_user)):
     if not current_user.organization_id:
         return {"error": "Not part of an organization"}
 
-    org = await db.organizations.find_one(
-        {"id": current_user.organization_id}, {"_id": 0}
-    )
+    org = await db.organizations.find_one({"id": current_user.organization_id}, {"_id": 0})
     if not org:
         return {"error": "Organization not found"}
 
@@ -140,14 +139,16 @@ async def get_team_analytics(current_user: User = Depends(get_current_user)):
             for cat in categories:
                 weakest_categories.setdefault(cat, []).append(score)
 
-        team_stats.append({
-            "user_id": member["id"],
-            "username": member.get("username", ""),
-            "display_name": member.get("display_name", ""),
-            "simulations_completed": len(user_sims),
-            "avg_score": round(user_avg, 1),
-            "level": member.get("level", 1),
-        })
+        team_stats.append(
+            {
+                "user_id": member["id"],
+                "username": member.get("username", ""),
+                "display_name": member.get("display_name", ""),
+                "simulations_completed": len(user_sims),
+                "avg_score": round(user_avg, 1),
+                "level": member.get("level", 1),
+            }
+        )
 
     # Find weakest areas
     category_averages = {}

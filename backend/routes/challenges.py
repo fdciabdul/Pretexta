@@ -1,14 +1,13 @@
-from typing import List
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
-from models.schemas import User, Challenge
+from models.schemas import Challenge, User
 from services.auth import get_current_user
 from services.database import db
 
 router = APIRouter(prefix="/challenges", tags=["challenges"])
 
 
-@router.get("", response_model=List[Challenge])
+@router.get("", response_model=list[Challenge])
 async def get_challenges(current_user: User = Depends(get_current_user)):
     challenges = await db.challenges.find({}, {"_id": 0}).to_list(1000)
     return challenges

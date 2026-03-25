@@ -1,8 +1,12 @@
 from fastapi import APIRouter, Depends
 
 from models.schemas import User
+from services.adaptive import (
+    get_adaptive_persona_params,
+    get_recommended_categories,
+    get_recommended_difficulty,
+)
 from services.auth import get_current_user
-from services.adaptive import get_recommended_difficulty, get_recommended_categories, get_adaptive_persona_params
 
 router = APIRouter(prefix="/adaptive", tags=["adaptive"])
 

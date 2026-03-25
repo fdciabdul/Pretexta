@@ -2,9 +2,9 @@ import asyncio
 import json
 import logging
 import re
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 
 logger = logging.getLogger(__name__)
 
@@ -39,10 +39,28 @@ PROVIDER_MODELS = {
         {"id": "gpt-3.5-turbo", "name": "GPT-3.5 Turbo", "context": 16385},
     ],
     "openrouter": [
-        {"id": "meta-llama/llama-3.3-70b-instruct", "name": "Llama 3.3 70B Instruct", "context": 128000},
-        {"id": "meta-llama/llama-3.1-405b-instruct", "name": "Llama 3.1 405B Instruct", "context": 128000},
-        {"id": "meta-llama/llama-3.1-8b-instruct:free", "name": "Llama 3.1 8B (Free)", "context": 128000, "free": True},
-        {"id": "google/gemini-2.0-flash-exp:free", "name": "Gemini 2.0 Flash (Free)", "context": 1000000, "free": True},
+        {
+            "id": "meta-llama/llama-3.3-70b-instruct",
+            "name": "Llama 3.3 70B Instruct",
+            "context": 128000,
+        },
+        {
+            "id": "meta-llama/llama-3.1-405b-instruct",
+            "name": "Llama 3.1 405B Instruct",
+            "context": 128000,
+        },
+        {
+            "id": "meta-llama/llama-3.1-8b-instruct:free",
+            "name": "Llama 3.1 8B (Free)",
+            "context": 128000,
+            "free": True,
+        },
+        {
+            "id": "google/gemini-2.0-flash-exp:free",
+            "name": "Gemini 2.0 Flash (Free)",
+            "context": 1000000,
+            "free": True,
+        },
         {"id": "google/gemini-pro-1.5", "name": "Gemini Pro 1.5", "context": 2000000},
         {"id": "anthropic/claude-3.5-sonnet", "name": "Claude 3.5 Sonnet", "context": 200000},
         {"id": "anthropic/claude-3.5-haiku", "name": "Claude 3.5 Haiku", "context": 200000},
@@ -54,7 +72,11 @@ PROVIDER_MODELS = {
         {"id": "deepseek/deepseek-chat", "name": "DeepSeek V3", "context": 128000},
         {"id": "deepseek/deepseek-r1", "name": "DeepSeek R1", "context": 64000},
         {"id": "nousresearch/hermes-3-llama-3.1-405b", "name": "Hermes 3 405B", "context": 128000},
-        {"id": "microsoft/phi-3-medium-128k-instruct", "name": "Phi 3 Medium 128K", "context": 128000},
+        {
+            "id": "microsoft/phi-3-medium-128k-instruct",
+            "name": "Phi 3 Medium 128K",
+            "context": 128000,
+        },
     ],
     "local": [
         {"id": "custom", "name": "Custom Model (enter below)", "context": 0},
@@ -124,7 +146,12 @@ def get_provider_models(provider: str) -> list:
 
 
 async def _invoke_openai_compatible(
-    api_key: str, model_name: str, messages: list, base_url: str = None, temperature: float = 0.7, extra_headers: dict = None
+    api_key: str,
+    model_name: str,
+    messages: list,
+    base_url: str = None,
+    temperature: float = 0.7,
+    extra_headers: dict = None,
 ):
     """Generic OpenAI-compatible invocation (works for OpenAI, OpenRouter, Local LLMs)."""
     from langchain_openai import ChatOpenAI
@@ -165,7 +192,7 @@ async def _invoke_gemini(api_key: str, model_name: str, messages: list, temperat
             if response:
                 logger.info(f"Success with model: {candidate}")
                 return response
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning(f"Timeout with model {candidate}")
             last_error = Exception(f"Request timed out for {candidate}")
         except Exception as e:
@@ -175,7 +202,7 @@ async def _invoke_gemini(api_key: str, model_name: str, messages: list, temperat
     raise last_error or Exception("All Gemini models failed")
 
 
-async def _invoke_provider(config: Dict[str, Any], messages: list, temperature: float = 0.7):
+async def _invoke_provider(config: dict[str, Any], messages: list, temperature: float = 0.7):
     """Route to the correct provider invocation."""
     provider = config["provider"]
     api_key = config.get("api_key", "")
@@ -198,7 +225,12 @@ async def _invoke_provider(config: Dict[str, Any], messages: list, temperature: 
         return await asyncio.wait_for(chat.ainvoke(messages), timeout=30.0)
 
     elif provider == "openai":
-        return await _invoke_openai_compatible(api_key, model_name, messages, temperature=temperature)
+        return await _invoke_openai_compatible(
+            api_key,
+            model_name,
+            messages,
+            temperature=temperature,
+        )
 
     elif provider == "openrouter":
         return await _invoke_openai_compatible(
@@ -231,7 +263,7 @@ async def _invoke_provider(config: Dict[str, Any], messages: list, temperature: 
 # ==================== PUBLIC API ====================
 
 
-async def get_llm_generate_model(config: Dict[str, Any], prompt: str, context: Dict[str, Any]):
+async def get_llm_generate_model(config: dict[str, Any], prompt: str, context: dict[str, Any]):
     """Generate pretext content using configured LLM provider."""
     context_str = json.dumps(context, indent=2) if isinstance(context, dict) else str(context)
     system_message = SystemMessage(
@@ -247,7 +279,7 @@ async def get_llm_generate_model(config: Dict[str, Any], prompt: str, context: D
     return await _invoke_provider(config, messages)
 
 
-async def get_llm_chat_model(config: Dict[str, Any], messages: list):
+async def get_llm_chat_model(config: dict[str, Any], messages: list):
     """Chat interaction using configured LLM provider."""
     return await _invoke_provider(config, messages, temperature=0.8)
 
@@ -300,17 +332,21 @@ async def fetch_openrouter_models(api_key: str) -> list:
                 data = response.json()
                 models = []
                 for m in data.get("data", []):
-                    models.append({
-                        "id": m["id"],
-                        "name": m.get("name", m["id"]),
-                        "context": m.get("context_length", 0),
-                        "pricing": m.get("pricing", {}),
-                    })
+                    models.append(
+                        {
+                            "id": m["id"],
+                            "name": m.get("name", m["id"]),
+                            "context": m.get("context_length", 0),
+                            "pricing": m.get("pricing", {}),
+                        }
+                    )
                 # Sort: free models first, then by name
-                models.sort(key=lambda x: (
-                    not (x.get("pricing", {}).get("prompt", "1") == "0"),
-                    x["name"],
-                ))
+                models.sort(
+                    key=lambda x: (
+                        not (x.get("pricing", {}).get("prompt", "1") == "0"),
+                        x["name"],
+                    )
+                )
                 return models
     except Exception as e:
         logger.warning(f"Failed to fetch OpenRouter models: {e}")

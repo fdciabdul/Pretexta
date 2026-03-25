@@ -1,9 +1,10 @@
 import os
+from datetime import UTC, datetime, timedelta
+
 import bcrypt
 import jwt
-from datetime import datetime, timezone, timedelta
 from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from models.schemas import User
 from services.database import db
@@ -24,7 +25,7 @@ def verify_password(password: str, password_hash: str) -> bool:
 
 
 def create_token(user_id: str) -> str:
-    expiration = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+    expiration = datetime.now(UTC) + timedelta(hours=JWT_EXPIRATION_HOURS)
     payload = {"user_id": user_id, "exp": expiration}
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 

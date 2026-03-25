@@ -1,7 +1,8 @@
-from typing import Any, Dict
-from fastapi import APIRouter, HTTPException, Depends
+from typing import Any
 
-from models.schemas import User, Challenge, Quiz
+from fastapi import APIRouter, Depends, HTTPException
+
+from models.schemas import Challenge, Quiz, User
 from services.auth import get_current_user
 from services.database import db
 
@@ -10,7 +11,7 @@ router = APIRouter(prefix="/import", tags=["import"])
 
 @router.post("/yaml")
 async def import_yaml_file(
-    file_content: Dict[str, Any], current_user: User = Depends(get_current_user)
+    file_content: dict[str, Any], current_user: User = Depends(get_current_user)
 ):
     """Import YAML challenge or quiz."""
     try:

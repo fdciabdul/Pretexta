@@ -1,8 +1,9 @@
-from typing import Any, Dict
-from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, Depends
+from datetime import UTC, datetime
+from typing import Any
 
-from models.schemas import User, ScenarioTemplate, Challenge
+from fastapi import APIRouter, Depends, HTTPException
+
+from models.schemas import Challenge, ScenarioTemplate, User
 from services.auth import get_current_user
 from services.database import db
 from services.gamification import award_xp
@@ -13,25 +14,25 @@ router = APIRouter(prefix="/scenario-builder", tags=["scenario-builder"])
 @router.get("/templates")
 async def get_my_templates(current_user: User = Depends(get_current_user)):
     """Get user's scenario templates (drafts and published)."""
-    templates = await db.scenario_templates.find(
-        {"created_by": current_user.id}, {"_id": 0}
-    ).sort("updated_at", -1).to_list(100)
+    templates = (
+        await db.scenario_templates.find({"created_by": current_user.id}, {"_id": 0})
+        .sort("updated_at", -1)
+        .to_list(100)
+    )
     return templates
 
 
 @router.get("/templates/{template_id}")
 async def get_template(template_id: str, current_user: User = Depends(get_current_user)):
     """Get a specific template."""
-    template = await db.scenario_templates.find_one(
-        {"id": template_id}, {"_id": 0}
-    )
+    template = await db.scenario_templates.find_one({"id": template_id}, {"_id": 0})
     if not template:
         raise HTTPException(status_code=404, detail="Template not found")
     return template
 
 
 @router.post("/templates")
-async def create_template(data: Dict[str, Any], current_user: User = Depends(get_current_user)):
+async def create_template(data: dict[str, Any], current_user: User = Depends(get_current_user)):
     """Create a new scenario template (draft)."""
     template = ScenarioTemplate(
         title=data.get("title", "Untitled Scenario"),
@@ -54,7 +55,7 @@ async def create_template(data: Dict[str, Any], current_user: User = Depends(get
 
 @router.put("/templates/{template_id}")
 async def update_template(
-    template_id: str, data: Dict[str, Any], current_user: User = Depends(get_current_user)
+    template_id: str, data: dict[str, Any], current_user: User = Depends(get_current_user)
 ):
     """Update a scenario template."""
     existing = await db.scenario_templates.find_one(
@@ -63,7 +64,7 @@ async def update_template(
     if not existing:
         raise HTTPException(status_code=404, detail="Template not found")
 
-    data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    data["updated_at"] = datetime.now(UTC).isoformat()
     await db.scenario_templates.update_one({"id": template_id}, {"$set": data})
     return {"message": "Template updated"}
 

@@ -1,24 +1,23 @@
 import logging
-from typing import Any, Dict
-from datetime import datetime, timezone
-from fastapi import APIRouter, HTTPException, Depends, Query
+from datetime import UTC, datetime
+from typing import Any
 
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from fastapi import APIRouter, Depends, HTTPException, Query
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
-from models.schemas import User, LLMConfig
+from models.schemas import LLMConfig, User
 from services.auth import get_current_user
+from services.database import db
 from services.llm import (
-    get_llm_generate_model,
-    get_llm_chat_model,
-    repair_json,
-    get_provider_models,
+    LOCAL_DEFAULTS,
+    PROVIDER_MODELS,
     fetch_local_models,
     fetch_openrouter_models,
-    MODEL_DEFAULTS,
-    PROVIDER_MODELS,
-    LOCAL_DEFAULTS,
+    get_llm_chat_model,
+    get_llm_generate_model,
+    get_provider_models,
+    repair_json,
 )
-from services.database import db
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +64,10 @@ PROVIDER_INFO = {
     },
     "local": {
         "name": "Local LLM",
-        "description": "Connect to Ollama, LM Studio, llama.cpp, or any OpenAI-compatible local server. No API key needed.",
+        "description": (
+            "Connect to Ollama, LM Studio, llama.cpp, or any "
+            "OpenAI-compatible local server. No API key needed."
+        ),
         "auth": "base_url",
         "placeholder": "http://localhost:11434/v1",
         "presets": LOCAL_DEFAULTS,
@@ -84,11 +86,12 @@ async def get_models_for_provider(
     provider: str,
     current_user: User = Depends(get_current_user),
 ):
-    """Get available models for a provider. Static catalog for most, dynamic for openrouter/local."""
+    """Get available models for a provider."""
     if provider == "local":
         # Try to fetch from configured local endpoint
         config = await db.llm_configs.find_one({"provider": "local"}, {"_id": 0})
-        base_url = config.get("base_url", LOCAL_DEFAULTS["ollama"]) if config else LOCAL_DEFAULTS["ollama"]
+        default_url = LOCAL_DEFAULTS["ollama"]
+        base_url = config.get("base_url", default_url) if config else default_url
         models = await fetch_local_models(base_url)
         if models:
             return {"provider": provider, "models": models, "source": "live"}
@@ -106,9 +109,18 @@ async def get_models_for_provider(
         api_key = config.get("api_key", "") if config else ""
         models = await fetch_openrouter_models(api_key)
         if models:
-            return {"provider": provider, "models": models[:100], "source": "live", "total": len(models)}
+            return {
+                "provider": provider,
+                "models": models[:100],
+                "source": "live",
+                "total": len(models),
+            }
         # Fallback to static catalog
-        return {"provider": provider, "models": PROVIDER_MODELS.get("openrouter", []), "source": "static"}
+        return {
+            "provider": provider,
+            "models": PROVIDER_MODELS.get("openrouter", []),
+            "source": "static",
+        }
 
     # Static catalog for all other providers
     models = get_provider_models(provider)
@@ -147,11 +159,13 @@ async def get_llm_configs(current_user: User = Depends(get_current_user)):
     active_configs = []
     for config in configs:
         # For local, api_key might be empty - that's OK
-        if config.get("provider") != "local" and (not config.get("api_key") or config.get("api_key") == ""):
+        if config.get("provider") != "local" and (
+            not config.get("api_key") or config.get("api_key") == ""
+        ):
             continue
         if config.get("api_key"):
             config["api_key"] = "***"
-        config["updated_at"] = config.get("updated_at", datetime.now(timezone.utc).isoformat())
+        config["updated_at"] = config.get("updated_at", datetime.now(UTC).isoformat())
         active_configs.append(config)
     return active_configs
 
@@ -179,7 +193,7 @@ async def save_llm_config(config: LLMConfig, current_user: User = Depends(get_cu
 
 
 @router.post("/generate")
-async def generate_pretext(request: Dict[str, Any], current_user: User = Depends(get_current_user)):
+async def generate_pretext(request: dict[str, Any], current_user: User = Depends(get_current_user)):
     """Generate pretext using LLM."""
     requested_provider = request.get("provider", None)
     prompt = request.get("prompt", "")
@@ -201,7 +215,11 @@ async def generate_pretext(request: Dict[str, Any], current_user: User = Depends
     try:
         response = await get_llm_generate_model(config, prompt, context)
         sanitized = repair_json(response.content)
-        return {"generated_text": sanitized, "provider": config["provider"], "model": config.get("model_name")}
+        return {
+            "generated_text": sanitized,
+            "provider": config["provider"],
+            "model": config.get("model_name"),
+        }
 
     except Exception as e:
         logger.error(f"LLM generation failed: {e}")
@@ -215,7 +233,7 @@ async def generate_pretext(request: Dict[str, Any], current_user: User = Depends
 
 
 @router.post("/chat")
-async def chat_interaction(request: Dict[str, Any], current_user: User = Depends(get_current_user)):
+async def chat_interaction(request: dict[str, Any], current_user: User = Depends(get_current_user)):
     """Real-time Chat Interaction for Roleplay."""
     history = request.get("history", [])
     persona = request.get("persona", {})
@@ -223,19 +241,24 @@ async def chat_interaction(request: Dict[str, Any], current_user: User = Depends
 
     config = await db.llm_configs.find_one({"enabled": True}, {"_id": 0})
     if not config:
-        raise HTTPException(status_code=400, detail="LLM config missing. Configure a provider in Settings.")
+        raise HTTPException(
+            status_code=400,
+            detail="LLM config missing. Configure a provider in Settings.",
+        )
 
     system_prompt = f"""You are a roleplay actor in a cybersecurity simulation.
-    Role: {persona.get('name', 'Attacker')}
-    Goal: {persona.get('goal', 'Trick the user')}
-    Personality: {persona.get('style', 'Manipulative')}
-    Context: {persona.get('context', 'Corporate Environment')}
+    Role: {persona.get("name", "Attacker")}
+    Goal: {persona.get("goal", "Trick the user")}
+    Personality: {persona.get("style", "Manipulative")}
+    Context: {persona.get("context", "Corporate Environment")}
 
     INSTRUCTIONS:
     1. Respond naturally as your character. Short, realistic messages (whatsapp/email style).
     2. Do NOT break character.
-    3. If the user successfully spots the attack or refuses securely, react accordingly (e.g. get angry, give up, or try a different angle).
-    4. If the user FAILS (gives password, clicks link), output a special marker in your text: [SUCCESS_ATTACK].
+    3. If the user successfully spots the attack or refuses securely,
+    react accordingly (e.g. get angry, give up, or try a different angle).
+    4. If the user FAILS (gives password, clicks link),
+    output a special marker in your text: [SUCCESS_ATTACK].
     5. If the user permanently BLOCKS the attack, output: [ATTACK_FAILED].
     """
 

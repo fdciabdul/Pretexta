@@ -1,8 +1,16 @@
 import re
-from fastapi import APIRouter, HTTPException, Depends
 
-from models.schemas import User, LoginRequest, LoginResponse, RegisterRequest, PasswordChangeRequest, ProfileUpdateRequest
-from services.auth import hash_password, verify_password, create_token, get_current_user
+from fastapi import APIRouter, Depends, HTTPException
+
+from models.schemas import (
+    LoginRequest,
+    LoginResponse,
+    PasswordChangeRequest,
+    ProfileUpdateRequest,
+    RegisterRequest,
+    User,
+)
+from services.auth import create_token, get_current_user, hash_password, verify_password
 from services.database import db
 from services.gamification import award_xp
 
