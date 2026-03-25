@@ -1,27 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from './ui/button';
-import { Terminal, LayoutDashboard, FileCode, ListChecks, Activity, Settings, LogOut, BookOpen } from 'lucide-react';
+import NotificationBell from './NotificationBell';
+import {
+  Terminal, LayoutDashboard, FileCode, ListChecks, Activity, Settings, LogOut, BookOpen,
+  Trophy, BarChart3, Flag, Pencil, Zap, Sun, Moon, User
+} from 'lucide-react';
 
 export default function Layout({ children, onLogout }) {
   const { t } = useTranslation();
   const location = useLocation();
+  const [theme, setTheme] = useState(localStorage.getItem('soceng_theme') || 'dark');
 
   const navigation = [
     { name: t('nav.dashboard'), path: '/', icon: LayoutDashboard },
     { name: t('nav.scenarios'), path: '/scenarios', icon: FileCode },
     { name: t('nav.quizzes'), path: '/quizzes', icon: ListChecks },
-    { name: t('nav.ai_challenge'), path: '/ai-challenge', icon: Activity },
+    { name: t('nav.ai_challenge'), path: '/ai-challenge', icon: Zap },
+    { name: 'Campaigns', path: '/campaigns', icon: Flag },
     { name: t('nav.history'), path: '/simulations', icon: Activity },
+    { name: 'Leaderboard', path: '/leaderboard', icon: Trophy },
+    { name: 'Analytics', path: '/analytics', icon: BarChart3 },
+    { name: 'Scenario Builder', path: '/scenario-builder', icon: Pencil },
     { name: t('nav.glossary', 'Glossary'), path: '/glossary', icon: BookOpen },
-    { name: t('nav.settings'), path: '/settings', icon: Settings }
+    { name: t('nav.settings'), path: '/settings', icon: Settings },
   ];
 
   const handleLogout = () => {
     localStorage.removeItem('soceng_token');
     localStorage.removeItem('soceng_user');
     onLogout();
+  };
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('soceng_theme', newTheme);
+    document.documentElement.classList.toggle('light', newTheme === 'light');
   };
 
   return (
@@ -49,7 +65,7 @@ export default function Layout({ children, onLogout }) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
           {navigation.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.path;
@@ -58,16 +74,15 @@ export default function Layout({ children, onLogout }) {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-none border-l-2 transition-all duration-300 group relative overflow-hidden ${isActive
+                className={`flex items-center space-x-3 px-4 py-2.5 rounded-none border-l-2 transition-all duration-300 group relative overflow-hidden ${isActive
                     ? 'border-primary bg-primary/10 text-primary'
                     : 'border-transparent text-muted-foreground hover:text-primary hover:bg-primary/5 hover:border-primary/50'
                   }`}
-                data-testid={`nav-${item.path.replace('/', '') || 'dashboard'}`}
               >
                 <div className={`absolute inset-0 bg-primary/5 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300 ${isActive ? 'translate-x-0' : ''}`} />
-                <Icon className={`w-5 h-5 relative z-10 transition-transform duration-300 ${isActive ? 'scale-110 drop-shadow-[0_0_5px_rgba(0,255,0,0.5)]' : 'group-hover:scale-110'}`} />
-                <span className="relative z-10 tracking-wide text-sm font-semibold">
-                  {isActive && <span className="mr-2 text-xs blink">&gt;</span>}
+                <Icon className={`w-4 h-4 relative z-10 transition-transform duration-300 ${isActive ? 'scale-110 drop-shadow-[0_0_5px_rgba(0,255,0,0.5)]' : 'group-hover:scale-110'}`} />
+                <span className="relative z-10 tracking-wide text-xs font-semibold">
+                  {isActive && <span className="mr-1 text-xs blink">&gt;</span>}
                   {item.name}
                 </span>
               </Link>
@@ -75,8 +90,25 @@ export default function Layout({ children, onLogout }) {
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="p-6 border-t border-primary/20 bg-black/20">
+        {/* Bottom Actions */}
+        <div className="p-4 border-t border-primary/20 bg-black/20 space-y-2">
+          {/* Theme + Notifications + Profile */}
+          <div className="flex items-center justify-between px-2 mb-2">
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+              <NotificationBell />
+            </div>
+            <Link to="/profile" className="p-2 text-muted-foreground hover:text-primary transition-colors">
+              <User className="w-4 h-4" />
+            </Link>
+          </div>
+
           <Button
             variant="ghost"
             className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 border border-transparent hover:border-destructive/30 rounded-none transition-all uppercase tracking-widest text-xs font-bold"

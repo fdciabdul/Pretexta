@@ -1,6 +1,6 @@
 # SocengLab Makefile
 
-.PHONY: help install build up down restart logs clean test seed
+.PHONY: help install build up down restart logs clean test seed lint lint-fix
 
 # Default target
 help:
@@ -23,6 +23,8 @@ help:
 	@echo "  make logs-backend  - Show backend logs only"
 	@echo "  make logs-frontend - Show frontend logs only"
 	@echo "  make test          - Run tests"
+	@echo "  make lint          - Run backend linter"
+	@echo "  make lint-fix      - Auto-fix lint issues"
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  make clean         - Remove containers and volumes"
@@ -89,6 +91,18 @@ test:
 	@cd backend && pytest
 	@cd frontend && yarn test --watchAll=false
 	@echo "✅ Tests completed"
+
+lint:
+	@echo "Linting backend..."
+	@cd backend && ruff check .
+	@cd backend && ruff format --check .
+	@echo "✅ Backend lint passed"
+
+lint-fix:
+	@echo "Fixing backend lint issues..."
+	@cd backend && ruff check --fix .
+	@cd backend && ruff format .
+	@echo "✅ Backend lint fixed"
 
 clean:
 	@echo "Cleaning up containers and volumes..."

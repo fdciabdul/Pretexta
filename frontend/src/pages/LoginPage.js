@@ -9,7 +9,7 @@ import { Terminal, Lock } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-export default function LoginPage({ onLogin }) {
+export default function LoginPage({ onLogin, onSwitchToRegister }) {
   const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -100,6 +100,17 @@ export default function LoginPage({ onLogin }) {
             Default: soceng / Cialdini@2025!
           </p>
         </div>
+
+        {onSwitchToRegister && (
+          <div className="mt-4 text-center">
+            <button
+              onClick={onSwitchToRegister}
+              className="text-xs text-muted-foreground hover:text-primary font-mono transition-colors"
+            >
+              Don't have an account? REGISTER
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

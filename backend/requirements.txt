@@ -19,3 +19,7 @@ langchain-groq
 
 # Utilities
 PyYAML
+httpx
+
+# Development
+ruff
