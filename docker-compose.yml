@@ -55,10 +55,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost:9442}
     container_name: soceng_frontend
     restart: unless-stopped
-    environment:
-      REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost:${BACKEND_PORT:-9442}}
     ports:
       - "${FRONTEND_PORT:-9443}:3000"
     depends_on:
