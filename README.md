@@ -2,163 +2,282 @@
 
 <img height="50px" alt="Pretexta" src="https://github.com/user-attachments/assets/fc119f85-9703-4ae6-ba2d-f71460f10c7c" />
 
-### The Psychology Behind Successful Attacks
-#### An Open Source Lab for Simulating Human Exploitation via Social Engineering
+**Defensive Social Engineering Simulation Lab**
 
-![Version](https://img.shields.io/badge/Version-2.0.0-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Type](https://img.shields.io/badge/Category-Demo_Lab_|_Research-lightgrey)
-![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+Train your team to recognize and resist psychological attacks — before real attackers strike.
+
+[![Version](https://img.shields.io/badge/Version-2.1.0-blue?style=flat-square)](https://github.com/fdciabdul/Pretexta/releases)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](LICENSE)
+[![CI](https://img.shields.io/github/actions/workflow/status/fdciabdul/Pretexta/ci.yml?style=flat-square&label=CI)](https://github.com/fdciabdul/Pretexta/actions)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
+
+[Quick Start](#quick-start) · [Features](#features) · [LLM Providers](#llm-providers) · [Contributing](#contributing)
 
 </div>
 
 ---
 
-Most security tools are designed to protect systems. **Pretexta is designed to understand why humans fail.
-<br>** Modern social engineering attacks do not rely on malware or exploits. They rely on **pretexting, authority, urgency, trust, and cognitive bias**.
+## Why Pretexta?
 
-Pretexta was created as an **open source simulation lab** to model how thesepsychological attack techniques work in practice — in a controlled, ethical, and defensive environment.
-This project focuses on **learning, experimentation, and community research**,
-not on generating real-world attacks.
+Most security tools protect systems. Pretexta protects **people**.
 
----
+Social engineering is the #1 attack vector — and it doesn't exploit software. It exploits **trust, urgency, authority, and cognitive bias**. Pretexta is an open-source simulation lab where your team practices defending against these attacks in a safe, controlled environment.
 
-### What Pretexta Is
+Built on **Cialdini's 6 Principles of Influence**: Reciprocity, Scarcity, Authority, Commitment, Liking, and Social Proof.
 
-- A **defensive social engineering simulation lab**
-- A platform to study **human decision-making under pressure**
-- An interactive environment for experimenting with **pretexting techniques**
-- A community-driven, **fully open source** research project
-
-All scenarios are **fictional, self-contained, and designed for defense and education only**.
-
----
-
-### Features
-
-- **Real-Time AI Chat**: Interact with dynamic AI personas (e.g., "The Urgent CEO", "Angry IT Support") powered by **Groq (Llama 3)**, Gemini, or Claude.
-- **Adaptive Psychology**: Scenarios are built on Cialdini's 6 Principles of Influence (Reciprocity, Scarcity, Authority, etc.).
-- **Interactive AI Lab**: A WhatsApp-style chat interface where you must defend against active pretexting attempts.
-- **Win/Loss Detection**: The AI automatically detects if you've been compromised (shared credentials, clicked links) or successfully defended the asset.
-- **Mission Logs**: Detailed history of your simulations with scoring and analysis.
-- **Quiz Mode**: Assess your theoretical knowledge of social engineering tactics.
-- **Bilingual Support**: Full support for English and Indonesian (Bahasa Indonesia).
-
----
-
-### How a Typical Demo Works
-
-1. A participant enters a simulated social engineering scenario
-2. An AI-driven attacker applies psychological pressure in real time
-3. The participant makes decisions under realistic constraints
-4. The system detects compromise or resistance
-5. A post-mission psychological debrief explains *why* the outcome occurred
-
-This flow is intentionally designed to fit a **short, repeatable demo format**
-suitable for live Demo Lab environments.
-
----
-
-### Quick Start (Demo Environment)
-
-#### Docker (Recommended)
+## Quick Start
 
 ```bash
-# Clone the repository
-git clone https://github.com/dalpan/Pretexta.git
+git clone https://github.com/fdciabdul/Pretexta.git
 cd Pretexta
-
-# Build and Start
-make build
-make up
-
-# Seed Initial Data
-make seed
-
-# Access the Lab
-# Frontend: http://localhost:3000
-# Backend: http://localhost:8001
-# Login: soceng / Cialdini@2025!
+cp .env.example .env        # Configure secrets
+make build && make up        # Start all services
+make seed                    # Load sample scenarios
 ```
 
-### LLM Configuration (Required)
+Open [http://localhost:3000](http://localhost:3000) and login with `soceng` / `Cialdini@2025!`
 
-To use the AI Chat features, you need an API key. We recommend **Groq** for the best speed/free-tier experience.
+> Requires Docker and Docker Compose.
 
-1.  **Get a Key**:
-    *   **Groq**: [console.groq.com](https://console.groq.com) (Recommended)
-    *   **Google Gemini**: [aistudio.google.com](https://aistudio.google.com)
-    *   **Anthropic**: [console.anthropic.com](https://console.anthropic.com)
-2.  **Configure**:
-    *   Go to `Settings` in the Pretexta Dashboard.
-    *   Select your provider (e.g., Groq).
-    *   Paste your API Key and click **Save**.
+## Features
 
----
+### Core Simulation
 
-### Tech Stack
+| Feature | Description |
+|---------|-------------|
+| **AI Chat Roleplay** | Real-time WhatsApp-style conversations with AI-driven social engineering personas |
+| **Adaptive Difficulty** | AI automatically adjusts attack sophistication based on your performance |
+| **Win/Loss Detection** | Automatic detection of compromise (credential sharing, link clicks) vs successful defense |
+| **Post-Sim Debrief** | Detailed psychological breakdown: which Cialdini principles were used and when you were most vulnerable |
+| **AI Deep Analysis** | LLM-powered analysis of your simulation performance with personalized tips |
 
-*   **Frontend**: React 18, Tailwind CSS, Lucide Icons, Axios
-*   **Backend**: Python FastAPI, LangChain, Motor (MongoDB Async)
-*   **AI/LLM**: LangChain integration with Groq (Llama 3), Gemini Pro, Claude Sonnet
-*   **Database**: MongoDB
+### Campaign Mode
 
----
+Multi-stage attack chains that simulate real-world scenarios:
 
-### Contributions
+```
+Email phishing → Follow-up phone call → Social media approach → Final extraction
+```
 
-We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to add new scenarios, quizzes, or features.
+Each stage unlocks progressively. Track progress, get per-stage scoring, and receive a full campaign debrief.
 
-#### Adding a New Scenario
-You can add new scenarios easily by creating a YAML file in `data/sample/`:
+### Gamification
+
+| Feature | Description |
+|---------|-------------|
+| **XP & Levels** | Earn experience points for every simulation completed |
+| **12 Badges** | Achievements like "Phishing Detector", "Authority Challenger", "Iron Will" (30-day streak) |
+| **Daily Streaks** | Maintain consecutive training days for bonus XP |
+| **Leaderboard** | Global and team rankings |
+
+### Team & Organization
+
+- Create organizations with invite codes
+- Team analytics dashboard with aggregate scores
+- Identify weakest Cialdini categories across your team
+- Per-member performance tracking
+- Webhook/Slack integration for training completion events
+
+### Content Tools
+
+| Feature | Description |
+|---------|-------------|
+| **Scenario Builder** | Visual editor to create custom social engineering scenarios |
+| **Quiz Mode** | Knowledge assessments on social engineering tactics |
+| **Certificate Export** | Printable completion certificates (Platinum / Gold / Silver) |
+| **YAML Import** | Bulk import scenarios and quizzes from YAML files |
+| **Bilingual** | Full English and Bahasa Indonesia support |
+
+### Platform
+
+- **Dark/Light theme** toggle
+- **PWA support** — installable on mobile
+- **Email renderer** — realistic Gmail-style inbox for phishing scenarios
+- **Voice simulation** — vishing practice via Web Speech API (Chrome/Edge)
+- **Notification system** — real-time alerts for badges, level-ups, and reminders
+- **Error boundary** — graceful crash recovery
+
+## LLM Providers
+
+Pretexta supports **6 LLM providers** with model selection. Configure in **Settings**.
+
+| Provider | Models | Free Tier | Best For |
+|----------|--------|-----------|----------|
+| **OpenRouter** | 200+ (Llama, GPT, Claude, Mistral, DeepSeek, Qwen) | Yes | Best value, most models |
+| **Groq** | Llama 3.3 70B, Mixtral, Gemma | Yes | Fastest inference |
+| **Google Gemini** | Gemini 2.0 Flash, 1.5 Pro | Yes | Generous limits |
+| **OpenAI** | GPT-4o, GPT-4o Mini | No | Industry standard |
+| **Anthropic** | Claude Sonnet 4, 3.5 Sonnet/Haiku | No | Best reasoning |
+| **Local LLM** | Any model via Ollama / LM Studio / llama.cpp | N/A | Full privacy, no API key |
+
+> **Recommended**: Start with **OpenRouter** (free models available) or **Groq** (ultra-fast free tier).
+
+### Local LLM Setup
+
+```bash
+# Ollama
+ollama serve
+ollama pull llama3.1
+
+# Then in Pretexta Settings → Local LLM → http://localhost:11434/v1
+```
+
+Also supports **LM Studio** (port 1234) and **llama.cpp** (port 8080).
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│                   Frontend                       │
+│         React 19 · Tailwind · Recharts           │
+│              localhost:3000                       │
+└──────────────────┬──────────────────────────────┘
+                   │ REST API
+┌──────────────────┴──────────────────────────────┐
+│                   Backend                        │
+│     FastAPI · LangChain · Pydantic · JWT         │
+│              localhost:8001                       │
+│                                                  │
+│  routes/    services/    models/    middleware/   │
+│  ├── auth        ├── llm        schemas.py       │
+│  ├── challenges  ├── gamification               │
+│  ├── campaigns   ├── adaptive                   │
+│  ├── leaderboard ├── scoring                    │
+│  ├── analytics   └── database                   │
+│  ├── debrief                                    │
+│  ├── certificates                               │
+│  ├── notifications                              │
+│  ├── webhooks                                   │
+│  └── scenario_builder                           │
+└──────────────────┬──────────────────────────────┘
+                   │
+┌──────────────────┴──────────────────────────────┐
+│                  MongoDB 7.0                     │
+│              localhost:27017                      │
+└─────────────────────────────────────────────────┘
+```
+
+## API Overview
+
+<details>
+<summary><strong>30+ REST Endpoints</strong> (click to expand)</summary>
+
+| Group | Endpoints |
+|-------|-----------|
+| **Auth** | `POST /register`, `POST /login`, `GET /me`, `PUT /profile`, `POST /change-password` |
+| **Challenges** | `GET /challenges`, `GET /challenges/:id`, `POST /challenges` |
+| **Quizzes** | `GET /quizzes`, `GET /quizzes/:id` |
+| **Simulations** | `CRUD /simulations` |
+| **LLM** | `GET /providers`, `GET /models/:provider`, `POST /config`, `POST /generate`, `POST /chat` |
+| **Campaigns** | `GET /campaigns`, `POST /start`, `POST /stage/:idx/complete` |
+| **Leaderboard** | `GET /leaderboard`, `GET /me`, `GET /badges` |
+| **Analytics** | `GET /personal`, `GET /team` |
+| **Organizations** | `POST /create`, `GET /mine`, `POST /join`, `DELETE /leave` |
+| **Debrief** | `GET /:simulation_id`, `POST /:simulation_id/ai-analysis` |
+| **Certificates** | `GET /:simulation_id`, `GET /user/all` |
+| **Notifications** | `GET /`, `PUT /:id/read`, `PUT /read-all` |
+| **Webhooks** | `CRUD /webhooks` |
+| **Scenario Builder** | `CRUD /templates`, `POST /publish` |
+| **Adaptive** | `GET /difficulty`, `GET /persona-params` |
+| **Health** | `GET /health` |
+
+All endpoints prefixed with `/api`. Full OpenAPI docs at `/docs` when running.
+
+</details>
+
+## Development
+
+```bash
+# Install locally (without Docker)
+make install
+
+# Lint backend
+make lint          # Check
+make lint-fix      # Auto-fix
+
+# Run tests
+make test
+
+# View logs
+make logs
+make logs-backend
+make logs-frontend
+
+# Database
+make db-shell      # MongoDB shell
+make drop          # Clear sample data
+make clean         # Remove containers + volumes
+```
+
+### Adding a Scenario
+
+Create a YAML file in `data/sample/`:
 
 ```yaml
-type: ai_challenge
+type: challenge
 title: "The Fake Recruiter"
-persona:
-  name: "Sarah Jenkins"
-  role: "Recruiter at TechCorp"
-  goal: "Get user to open malicious resume PDF"
-  style: "Professional, Friendly, slightly pushy"
+description: "A headhunter offers your dream job..."
+difficulty: medium
+cialdini_categories: [liking, reciprocity]
+estimated_time: 10
+metadata:
+  author: "Your Name"
+  tags: [phishing, recruitment]
+nodes:
+  - id: start
+    type: message
+    channel: email_inbox
+    content_en:
+      subject: "Exciting VP Opportunity"
+      from: "sarah@techcorp-careers.com"
+      body: "Hi! I found your profile and I'm impressed..."
+  - id: choice_1
+    type: question
+    content_en:
+      text: "What do you do?"
+    options:
+      - text: "Open the attached resume PDF"
+        next: end_compromised
+        score_impact: -20
+      - text: "Verify the recruiter's identity first"
+        next: end_safe
+        score_impact: 20
 ```
 
-Then run `make seed` to import it.
+Run `make seed` to import.
 
-### Open Source & Community
+Or use the **Scenario Builder** in the UI for a visual editor.
 
-Pretexta is **fully open source** and intended for:
+## Contributing
 
-- Security researchers exploring human-layer attack surfaces
-- Educators teaching social engineering defense
-- Hackers interested in psychological attack modeling
-- Contributors who want to extend scenarios or analysis methods
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-We actively encourage:
-- Scenario contributions
-- Research experiments
-- Critical feedback
-- Forks and extensions
+**Ways to contribute:**
+- Add new social engineering scenarios (YAML or Scenario Builder)
+- Improve AI persona behaviors
+- Add new Cialdini-based analysis rules
+- Translate to more languages
+- Report bugs and suggest features
 
----
+## Ethics
 
-### Ethics & Scope
+Pretexta is strictly for **defensive education and research**.
 
-Pretexta is designed strictly for **defensive education and research**.
+- All simulations are fictional and self-contained
+- No real-world targeting or phishing infrastructure
+- No data harvesting or live attack automation
+- No offensive tooling
 
-- No real-world targeting
-- No phishing infrastructure
-- No data harvesting
-- No automation for live attacks
+Use responsibly. Train defenders, not attackers.
 
-All simulations are fictional and isolated from real systems.
+## License
 
----
-
-### License
-
-This project is licensed under the MIT License.
+[MIT License](LICENSE)
 
 ---
 
-**Pretexta**
-"*Understanding why social engineering works — before attackers do.*"
+<div align="center">
+
+**Pretexta** — *Understanding why social engineering works, before attackers do.*
+
+</div>

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   mongodb:
     image: mongo:7.0
@@ -29,8 +27,6 @@ services:
       dockerfile: Dockerfile.backend
     container_name: soceng_backend
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       MONGO_URL: mongodb://${MONGO_USERNAME:-soceng_admin}:${MONGO_PASSWORD:-soceng_secure_password_2025}@mongodb:27017/${DB_NAME:-Pretexta}?authSource=admin
       DB_NAME: ${DB_NAME:-Pretexta}

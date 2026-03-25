@@ -39,11 +39,13 @@ install:
 
 build:
 	@echo "Building Docker images..."
+	@if [ ! -f .env ]; then cp .env.example .env && echo "📋 Created .env from .env.example"; fi
 	@docker-compose build
 	@echo "✅ Docker images built"
 
 up:
 	@echo "Starting Pretexta..."
+	@if [ ! -f .env ]; then cp .env.example .env && echo "📋 Created .env from .env.example"; fi
 	@docker-compose up -d
 	@echo "⏳ Waiting for services to start..."
 	@sleep 10
