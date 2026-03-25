@@ -25,6 +25,50 @@ Social engineering is the #1 attack vector — and it doesn't exploit software. 
 
 Built on **Cialdini's 6 Principles of Influence**: Reciprocity, Scarcity, Authority, Commitment, Liking, and Social Proof.
 
+## Screenshots
+
+<details>
+<summary><strong>Dashboard</strong></summary>
+
+![Dashboard](screenshots/03-dashboard.png)
+
+</details>
+
+<details>
+<summary><strong>AI Chat Simulation</strong> — Real-time roleplay with "The Urgent CEO"</summary>
+
+![AI Chat](screenshots/05-ai-chat.png)
+
+</details>
+
+<details>
+<summary><strong>AI Challenge Selection</strong> — 8 built-in social engineering personas</summary>
+
+![AI Challenge](screenshots/04-ai-challenge.png)
+
+</details>
+
+<details>
+<summary><strong>Settings</strong> — 6 LLM providers with model selection (200+ models via OpenRouter)</summary>
+
+![Settings](screenshots/06-settings.png)
+
+</details>
+
+<details>
+<summary><strong>Leaderboard</strong> — XP, levels, streaks, and rankings</summary>
+
+![Leaderboard](screenshots/07-leaderboard.png)
+
+</details>
+
+<details>
+<summary><strong>Login</strong></summary>
+
+![Login](screenshots/02-login.png)
+
+</details>
+
 ## Quick Start
 
 ```bash
