@@ -11,7 +11,7 @@ services:
       - mongodb_data:/data/db
       - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT:-47017}:27017"
     networks:
       - soceng_network
     healthcheck:
@@ -31,13 +31,13 @@ services:
       MONGO_URL: mongodb://${MONGO_USERNAME:-soceng_admin}:${MONGO_PASSWORD:-soceng_secure_password_2025}@mongodb:27017/${DB_NAME:-Pretexta}?authSource=admin
       DB_NAME: ${DB_NAME:-Pretexta}
       JWT_SECRET: ${JWT_SECRET:-change-this-secret-key-in-production}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:80}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:${FRONTEND_PORT:-9443},http://localhost:80}
     volumes:
       - ./backend:/app
       - ./data:/app/data
       - ./bin:/app/bin
     ports:
-      - "8001:8001"
+      - "${BACKEND_PORT:-9442}:8001"
     depends_on:
       mongodb:
         condition: service_healthy
@@ -58,9 +58,9 @@ services:
     container_name: soceng_frontend
     restart: unless-stopped
     environment:
-      REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost:8001}
+      REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost:${BACKEND_PORT:-9442}}
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-9443}:3000"
     depends_on:
       backend:
         condition: service_healthy

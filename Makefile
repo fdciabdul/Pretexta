@@ -52,9 +52,9 @@ up:
 	@echo ""
 	@echo "✅ Pretexta is running!"
 	@echo ""
-	@echo "🌐 Frontend: http://localhost:3000"
-	@echo "🔌 Backend API: http://localhost:8001"
-	@echo "🗄️  MongoDB: mongodb://localhost:27017"
+	@echo "🌐 Frontend: http://localhost:9443"
+	@echo "🔌 Backend API: http://localhost:9442"
+	@echo "🗄️  MongoDB: mongodb://localhost:47017"
 	@echo ""
 	@echo "📝 Default credentials: soceng / Cialdini@2025!"
 	@echo ""
@@ -80,7 +80,7 @@ logs-frontend:
 	@docker-compose logs -f frontend
 
 db-shell:
-	@docker-compose exec mongodb mongosh -u soceng_admin -p soceng_secure_password_2025 --authenticationDatabase admin Pretexta
+	@docker-compose exec mongodb mongosh -u soceng_admin -p soceng_secure_password_2025 --authenticationDatabase admin Pretexta 2>/dev/null || docker compose exec mongodb mongosh -u soceng_admin -p soceng_secure_password_2025 --authenticationDatabase admin Pretexta
 
 seed:
 	@echo "Importing sample challenges and quizzes..."

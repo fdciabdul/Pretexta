@@ -35,7 +35,7 @@ make build && make up        # Start all services
 make seed                    # Load sample scenarios
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and login with `soceng` / `Cialdini@2025!`
+Open [http://localhost:9443](http://localhost:9443) and login with `soceng` / `Cialdini@2025!`
 
 > Requires Docker and Docker Compose.
 
@@ -130,13 +130,13 @@ Also supports **LM Studio** (port 1234) and **llama.cpp** (port 8080).
 ┌─────────────────────────────────────────────────┐
 │                   Frontend                       │
 │         React 19 · Tailwind · Recharts           │
-│              localhost:3000                       │
+│              localhost:9443                       │
 └──────────────────┬──────────────────────────────┘
                    │ REST API
 ┌──────────────────┴──────────────────────────────┐
 │                   Backend                        │
 │     FastAPI · LangChain · Pydantic · JWT         │
-│              localhost:8001                       │
+│              localhost:9442                       │
 │                                                  │
 │  routes/    services/    models/    middleware/   │
 │  ├── auth        ├── llm        schemas.py       │
@@ -153,7 +153,7 @@ Also supports **LM Studio** (port 1234) and **llama.cpp** (port 8080).
                    │
 ┌──────────────────┴──────────────────────────────┐
 │                  MongoDB 7.0                     │
-│              localhost:27017                      │
+│              localhost:47017                      │
 └─────────────────────────────────────────────────┘
 ```
 
