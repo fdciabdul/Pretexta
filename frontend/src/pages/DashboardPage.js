@@ -48,13 +48,13 @@ export default function DashboardPage() {
 
   const StatCard = ({ icon: Icon, label, value, colorClass }) => (
     <Card className={`glass-panel border-l-4 ${colorClass} hover:bg-white/5 transition-all duration-300`}>
-      <CardContent className="p-6 flex items-center justify-between">
+      <CardContent className="p-4 md:p-6 flex items-center justify-between">
         <div>
-          <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1">{label}</p>
-          <p className="text-4xl font-bold font-mono text-foreground tracking-tighter neon-text">{value}</p>
+          <p className="text-[10px] md:text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1">{label}</p>
+          <p className="text-2xl md:text-4xl font-bold font-mono text-foreground tracking-tighter neon-text">{value}</p>
         </div>
-        <div className={`p-3 rounded-none bg-background/50 border border-white/10`}>
-          <Icon className="w-8 h-8 text-white/80" />
+        <div className="p-2 md:p-3 rounded-none bg-background/50 border border-white/10">
+          <Icon className="w-6 h-6 md:w-8 md:h-8 text-white/80" />
         </div>
       </CardContent>
     </Card>
@@ -69,7 +69,7 @@ export default function DashboardPage() {
             <Shield className="w-6 h-6 text-primary animate-pulse-slow" />
             <span className="text-xs font-mono text-primary uppercase tracking-[0.2em]">System Online</span>
           </div>
-          <h1 className="text-3xl font-bold font-mono uppercase tracking-widest text-primary">
+          <h1 className="text-xl md:text-3xl font-bold font-mono uppercase tracking-widest text-primary">
             {t('dashboard.welcome')}
           </h1>
           <p className="text-muted-foreground font-mono text-sm mt-1 border-l-2 border-primary/50 pl-3">
@@ -86,7 +86,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
         <StatCard
           icon={Shield}
           label="AI Scenarios"
@@ -113,10 +113,10 @@ export default function DashboardPage() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Quick Actions */}
-        <div className="lg:col-span-1 space-y-6">
-          <h2 className="text-xl font-bold flex items-center gap-2 font-mono uppercase tracking-wider text-primary">
+        <div className="lg:col-span-1 space-y-4 md:space-y-6">
+          <h2 className="text-lg md:text-xl font-bold flex items-center gap-2 font-mono uppercase tracking-wider text-primary">
             <Zap className="w-5 h-5" /> Quick Actions
           </h2>
           <div className="grid gap-3">

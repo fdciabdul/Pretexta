@@ -1,7 +1,11 @@
 import logging
 import os
+import uuid
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
+from pathlib import Path
 
+import yaml
 from fastapi import APIRouter, FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
@@ -38,6 +42,40 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+async def auto_import_yaml(db):
+    """Auto-import YAML sample data on first run."""
+    data_dirs = [
+        Path("/app/data/sample"),
+        Path("/app/data/professionals"),
+        Path("data/sample"),
+        Path("data/professionals"),
+    ]
+    total = 0
+    for data_dir in data_dirs:
+        if not data_dir.exists():
+            continue
+        for yaml_file in sorted(data_dir.glob("*.yaml")):
+            try:
+                with open(yaml_file, encoding="utf-8") as f:
+                    data = yaml.safe_load(f)
+                yaml_type = data.get("type")
+                if not yaml_type:
+                    continue
+                data["id"] = str(uuid.uuid4())
+                data["created_at"] = datetime.now(UTC).isoformat()
+                if yaml_type == "challenge":
+                    await db.challenges.insert_one(data)
+                elif yaml_type == "quiz":
+                    await db.quizzes.insert_one(data)
+                else:
+                    continue
+                total += 1
+                logger.info(f"  Imported: {data.get('title', yaml_file.name)}")
+            except Exception as e:
+                logger.warning(f"  Failed to import {yaml_file.name}: {e}")
+    logger.info(f"Auto-import complete: {total} items loaded")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup and shutdown events."""
@@ -61,6 +99,13 @@ async def lifespan(app: FastAPI):
     await db.notifications.create_index([("user_id", 1), ("read", 1)])
     await db.simulations.create_index([("user_id", 1), ("status", 1)])
     await db.campaign_progress.create_index([("campaign_id", 1), ("user_id", 1)])
+
+    # Auto-import sample data if database is empty
+    challenge_count = await db.challenges.count_documents({})
+    quiz_count = await db.quizzes.count_documents({})
+    if challenge_count == 0 and quiz_count == 0:
+        logger.info("Empty database detected — auto-importing sample data...")
+        await auto_import_yaml(db)
 
     # Warn about default JWT secret
     jwt_secret = os.environ.get("JWT_SECRET", "")
