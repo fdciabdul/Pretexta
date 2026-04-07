@@ -1,7 +1,11 @@
-FROM node:20-alpine as builder
+FROM node:20-alpine AS builder
 
 # Set working directory
 WORKDIR /app
+
+# Build arg — passed from docker-compose at build time
+ARG REACT_APP_BACKEND_URL=http://localhost:9442
+ENV REACT_APP_BACKEND_URL=$REACT_APP_BACKEND_URL
 
 # Copy package files
 COPY frontend/package.json frontend/yarn.lock ./
@@ -12,7 +16,7 @@ RUN yarn install --frozen-lockfile
 # Copy source code
 COPY frontend/ .
 
-# Build the application
+# Build the application (REACT_APP_* env vars are baked in here)
 RUN yarn build
 
 # Production stage

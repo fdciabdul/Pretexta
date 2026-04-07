@@ -1,21 +1,25 @@
-version: '3.8'
-
 services:
   mongodb:
     image: mongo:7.0
     container_name: soceng_mongodb
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: soceng_admin
-      MONGO_INITDB_ROOT_PASSWORD: soceng_secure_password_2025
-      MONGO_INITDB_DATABASE: Pretexta
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-soceng_admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-soceng_secure_password_2025}
+      MONGO_INITDB_DATABASE: ${DB_NAME:-Pretexta}
     volumes:
       - mongodb_data:/data/db
       - ./docker/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     ports:
-      - "27017:27017"
+      - "${MONGO_PORT:-47017}:27017"
     networks:
       - soceng_network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   backend:
     build:
@@ -24,36 +28,50 @@ services:
     container_name: soceng_backend
     restart: unless-stopped
     environment:
-      MONGO_URL: mongodb://soceng_admin:soceng_secure_password_2025@mongodb:27017/Pretexta?authSource=admin
-      DB_NAME: Pretexta
+      MONGO_URL: mongodb://${MONGO_USERNAME:-soceng_admin}:${MONGO_PASSWORD:-soceng_secure_password_2025}@mongodb:27017/${DB_NAME:-Pretexta}?authSource=admin
+      DB_NAME: ${DB_NAME:-Pretexta}
       JWT_SECRET: ${JWT_SECRET:-change-this-secret-key-in-production}
-      CORS_ORIGINS: http://localhost:3000,http://localhost:80
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:${FRONTEND_PORT:-9443},http://localhost:80}
     volumes:
       - ./backend:/app
       - ./data:/app/data
       - ./bin:/app/bin
     ports:
-      - "8001:8001"
+      - "${BACKEND_PORT:-9442}:8001"
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
     networks:
       - soceng_network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     command: uvicorn server:app --host 0.0.0.0 --port 8001 --reload
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        REACT_APP_BACKEND_URL: ${REACT_APP_BACKEND_URL:-http://localhost:9442}
     container_name: soceng_frontend
     restart: unless-stopped
-    environment:
-      REACT_APP_BACKEND_URL: http://localhost:8001
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PORT:-9443}:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
       - soceng_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   mongodb_data:

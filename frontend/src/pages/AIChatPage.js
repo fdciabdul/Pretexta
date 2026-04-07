@@ -20,6 +20,7 @@ export default function AIChatPage() {
     const [loading, setLoading] = useState(false);
     const [gameStatus, setGameStatus] = useState('idle'); // idle, active, won, lost
     const messagesEndRef = useRef(null);
+    const inputRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -92,6 +93,8 @@ export default function AIChatPage() {
             toast.error('AI Connection lost. Try again.');
         } finally {
             setLoading(false);
+            // Auto-focus input after AI response
+            setTimeout(() => inputRef.current?.focus(), 100);
         }
     };
 
@@ -232,6 +235,7 @@ export default function AIChatPage() {
             {/* Input Area */}
             <form onSubmit={handleSendMessage} className="flex gap-2">
                 <Input
+                    ref={inputRef}
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     placeholder="Type your response..."

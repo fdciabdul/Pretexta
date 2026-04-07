@@ -1,6 +1,6 @@
 # SocengLab Makefile
 
-.PHONY: help install build up down restart logs clean test seed
+.PHONY: help install build up down restart logs clean test seed lint lint-fix
 
 # Default target
 help:
@@ -23,6 +23,8 @@ help:
 	@echo "  make logs-backend  - Show backend logs only"
 	@echo "  make logs-frontend - Show frontend logs only"
 	@echo "  make test          - Run tests"
+	@echo "  make lint          - Run backend linter"
+	@echo "  make lint-fix      - Auto-fix lint issues"
 	@echo ""
 	@echo "Maintenance:"
 	@echo "  make clean         - Remove containers and volumes"
@@ -37,20 +39,22 @@ install:
 
 build:
 	@echo "Building Docker images..."
+	@if [ ! -f .env ]; then cp .env.example .env && echo "📋 Created .env from .env.example"; fi
 	@docker-compose build
 	@echo "✅ Docker images built"
 
 up:
 	@echo "Starting Pretexta..."
+	@if [ ! -f .env ]; then cp .env.example .env && echo "📋 Created .env from .env.example"; fi
 	@docker-compose up -d
 	@echo "⏳ Waiting for services to start..."
 	@sleep 10
 	@echo ""
 	@echo "✅ Pretexta is running!"
 	@echo ""
-	@echo "🌐 Frontend: http://localhost:3000"
-	@echo "🔌 Backend API: http://localhost:8001"
-	@echo "🗄️  MongoDB: mongodb://localhost:27017"
+	@echo "🌐 Frontend: http://localhost:9443"
+	@echo "🔌 Backend API: http://localhost:9442"
+	@echo "🗄️  MongoDB: mongodb://localhost:47017"
 	@echo ""
 	@echo "📝 Default credentials: soceng / Cialdini@2025!"
 	@echo ""
@@ -76,7 +80,7 @@ logs-frontend:
 	@docker-compose logs -f frontend
 
 db-shell:
-	@docker-compose exec mongodb mongosh -u soceng_admin -p soceng_secure_password_2025 --authenticationDatabase admin Pretexta
+	@docker-compose exec mongodb mongosh -u soceng_admin -p soceng_secure_password_2025 --authenticationDatabase admin Pretexta 2>/dev/null || docker compose exec mongodb mongosh -u soceng_admin -p soceng_secure_password_2025 --authenticationDatabase admin Pretexta
 
 seed:
 	@echo "Importing sample challenges and quizzes..."
@@ -89,6 +93,18 @@ test:
 	@cd backend && pytest
 	@cd frontend && yarn test --watchAll=false
 	@echo "✅ Tests completed"
+
+lint:
+	@echo "Linting backend..."
+	@cd backend && ruff check .
+	@cd backend && ruff format --check .
+	@echo "✅ Backend lint passed"
+
+lint-fix:
+	@echo "Fixing backend lint issues..."
+	@cd backend && ruff check --fix .
+	@cd backend && ruff format .
+	@echo "✅ Backend lint fixed"
 
 clean:
 	@echo "Cleaning up containers and volumes..."
