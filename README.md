@@ -171,18 +171,18 @@ Also supports **LM Studio** (port 1234) and **llama.cpp** (port 8080).
 
 ```
 ┌─────────────────────────────────────────────────┐
-│                   Frontend                       │
-│         React 19 · Tailwind · Recharts           │
-│              localhost:9443                       │
+│                   Frontend                      │
+│         React 19 · Tailwind · Recharts          │
+│              localhost:9443                     │
 └──────────────────┬──────────────────────────────┘
                    │ REST API
 ┌──────────────────┴──────────────────────────────┐
-│                   Backend                        │
-│     FastAPI · LangChain · Pydantic · JWT         │
-│              localhost:9442                       │
-│                                                  │
-│  routes/    services/    models/    middleware/   │
-│  ├── auth        ├── llm        schemas.py       │
+│                   Backend                       │
+│     FastAPI · LangChain · Pydantic · JWT        │
+│              localhost:9442                     │
+│                                                 │
+│  routes/    services/    models/    middleware/ │
+│  ├── auth        ├── llm        schemas.py      │
 │  ├── challenges  ├── gamification               │
 │  ├── campaigns   ├── adaptive                   │
 │  ├── leaderboard ├── scoring                    │
@@ -195,8 +195,8 @@ Also supports **LM Studio** (port 1234) and **llama.cpp** (port 8080).
 └──────────────────┬──────────────────────────────┘
                    │
 ┌──────────────────┴──────────────────────────────┐
-│                  MongoDB 7.0                     │
-│              localhost:47017                      │
+│                  MongoDB 7.0                    │
+│              localhost:47017                    │
 └─────────────────────────────────────────────────┘
 ```
 
