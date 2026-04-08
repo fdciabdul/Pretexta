@@ -213,9 +213,17 @@ Format your response as JSON:
   const getChannelIcon = (channel) => {
     switch (channel) {
       case 'email_inbox': return <Mail className="w-5 h-5" />;
-      case 'chat_ui': return <MessageSquare className="w-5 h-5" />;
-      case 'phone_sim': return <Phone className="w-5 h-5" />;
-      case 'web_sim': return <Globe className="w-5 h-5" />;
+      case 'chat_ui':
+      case 'sms':
+      case 'social_media':
+      case 'linkedin':
+        return <MessageSquare className="w-5 h-5" />;
+      case 'phone_sim':
+      case 'phone_call':
+        return <Phone className="w-5 h-5" />;
+      case 'web_sim':
+      case 'browser':
+        return <Globe className="w-5 h-5" />;
       default: return <Mail className="w-5 h-5" />;
     }
   };
@@ -311,8 +319,36 @@ Format your response as JSON:
                 </div>
               )}
 
+              {getContent(currentNode, 'caller') && (
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase">Caller ID</div>
+                  <div className="font-mono text-sm">{getContent(currentNode, 'caller')}</div>
+                </div>
+              )}
+
+              {getContent(currentNode, 'sender') && (
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase">Sender</div>
+                  <div className="font-mono text-sm">{getContent(currentNode, 'sender')}</div>
+                </div>
+              )}
+
+              {getContent(currentNode, 'url') && (
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase">URL</div>
+                  <div className="font-mono text-sm text-blue-400">{getContent(currentNode, 'url')}</div>
+                </div>
+              )}
+
+              {getContent(currentNode, 'attachment') && (
+                <div className="inline-flex items-center space-x-2 p-2 bg-muted/20 border border-muted/30 rounded mt-2">
+                  <span className="text-xs text-muted-foreground uppercase font-bold">Attachment:</span>
+                  <span className="font-mono text-sm text-tertiary">{getContent(currentNode, 'attachment')}</span>
+                </div>
+              )}
+
               <div className="prose prose-invert max-w-none">
-                <p className="whitespace-pre-wrap">{getContent(currentNode, 'body') || getContent(currentNode, 'text')}</p>
+                <p className="whitespace-pre-wrap">{getContent(currentNode, 'body') || getContent(currentNode, 'text') || getContent(currentNode, 'transcript') || getContent(currentNode, 'message') || getContent(currentNode, 'info')}</p>
               </div>
 
               {currentNode.tactics_used && (
