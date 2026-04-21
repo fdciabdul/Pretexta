@@ -71,7 +71,7 @@ Built on **Cialdini's 6 Principles of Influence**: Reciprocity, Scarcity, Author
 ## Quick Start
 
 ```bash
-git clone https://github.com/fdciabdul/Pretexta.git
+git clone https://github.com/dalpan/Pretexta.git
 cd Pretexta
 cp .env.example .env        # Configure secrets
 make build && make up        # Start all services
