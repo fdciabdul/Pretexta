@@ -1,5 +1,6 @@
 import logging
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
@@ -37,9 +38,14 @@ async def create_webhook(data: dict[str, Any], current_user: User = Depends(get_
     if current_user.role not in ("admin", "instructor"):
         raise HTTPException(status_code=403, detail="Insufficient permissions")
 
+    url = data.get("url", "")
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        raise HTTPException(status_code=400, detail="Webhook URL must be http(s) with a host")
+
     webhook = WebhookConfig(
         name=data["name"],
-        url=data["url"],
+        url=url,
         events=data.get("events", ["simulation_complete"]),
         secret=data.get("secret"),
         organization_id=current_user.organization_id,
